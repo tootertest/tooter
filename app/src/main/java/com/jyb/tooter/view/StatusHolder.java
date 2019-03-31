@@ -130,7 +130,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         if (flag) {
             Drawable drawable = new IconicsDrawable(mView.getContext())
                     .icon(FontAwesome.Icon.faw_retweet)
-                    .color(mFragment.getResources().getColor(R.color.status_favourite_button_marked_dark))
+                    .color(mFragment.getResources().getColor(R.color.status_reblog_button_marked_dark))
                     .sizeDp(mDrawableSize);
             mImageReblogs.setBackground(drawable);
         } else {
@@ -152,7 +152,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         mFavouritesCount.setText(count3);
     }
 
-    public void setControllerGroupVisibility(boolean flag) {
+    public void setControllerGroupGONE(boolean flag) {
         if (flag) {
             mLayoutReplies.setVisibility(View.VISIBLE);
             mLayoutReblogs.setVisibility(View.VISIBLE);
@@ -166,23 +166,26 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setControllerGroupVisibility(boolean flag1, boolean flag2, boolean flag3, boolean flag4) {
-        if (flag1) {
+    public void setControllerGroupGONE(boolean flagReplies,
+                                       boolean flagReblogs,
+                                       boolean flagFavourites,
+                                       boolean flagMore) {
+        if (flagReplies) {
             mLayoutReplies.setVisibility(View.VISIBLE);
         } else {
             mLayoutReplies.setVisibility(View.GONE);
         }
-        if (flag2) {
+        if (flagReblogs) {
             mLayoutReblogs.setVisibility(View.VISIBLE);
         } else {
             mLayoutReblogs.setVisibility(View.GONE);
         }
-        if (flag3) {
+        if (flagFavourites) {
             mLayoutFavourites.setVisibility(View.VISIBLE);
         } else {
             mLayoutFavourites.setVisibility(View.GONE);
         }
-        if (flag4) {
+        if (flagMore) {
             mImageMore.setVisibility(View.VISIBLE);
         } else {
             mImageMore.setVisibility(View.GONE);
@@ -210,7 +213,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
 
     public void clean() {
 
-        setControllerGroupVisibility(true);
+        setControllerGroupGONE(true);
 
         mImageReplies.setBackground(mDrawableReplies);
         mImageReblogs.setBackground(mDrawableReblogs);

@@ -133,7 +133,9 @@
     <string name="notification_summary_medium">%1$s, %2$s, and %3$s</string>
     <string name="notification_summary_small">%1$s and %2$s</string>
     <string name="notification_title_summary">%d new interactions</string>
-    <string name="network_refresh_error">network connection is invalid</string>
+
+
+    <string name="default_instance">cmx.social</string>
 
     <string name="about">关于</string>
     <string name="login_action_login">登录</string>
@@ -143,7 +145,7 @@
         感谢使用mastodon第三方开源应用tooter。请准守当地相关法律法规，合理使用本app。如果您认为本app侵犯了您的权益或者违反了相关规定请与作者本人联系。
         作者长毛象社区id：cmx.social@tooter_developer。
     </string>
-    <string name="use">我正在使用tooter社区测试版</string>
+    <string name="use">我正在使用tooter测试版</string>
 
     <string name="drawer_profile">用户</string>
     <string name="drawer_search">搜索</string>
@@ -155,9 +157,12 @@
     <string name="drawer_info">信息</string>
     <string name="drawer_exit">退出</string>
     <string name="drawer_filter">过滤</string>
-    <string name="toot_send">发送嘟嘟</string>
+    <string name="toot_send">发嘟嘟</string>
     <string name="strong_follow"><![CDATA[<strong>关注了你</strong>]]></string>
     <string name="strong_reblog"><![CDATA[<strong>转嘟了你</strong>]]></string>
     <string name="strong_favourite"><![CDATA[<strong>收藏了你</strong>]]></string>
-    <string name="strong_mention"><![CDATA[<strong>私信了你</strong>]]></string>
+    <string name="strong_mention"><![CDATA[<strong>回复了你</strong>]]></string>
+
+    <string name="network_request_timeout">网络请求超时</string>
+
 </resources>

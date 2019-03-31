@@ -26,8 +26,7 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:inputType="textPersonName"
-                    android:text="" />
-                <!--cmx.social-->
+                    android:text="@string/default_instance" />
 
                 <CheckBox
                     android:id="@+id/login_remember"

@@ -40,7 +40,6 @@ import retrofit2.Response;
 public class FragmentStatus extends Fragment {
 
     private static String TAG = "DEBUG_FragmentHome";
-    private final int mMaxLimit;
 
     SmartRefreshLayout mRefresh;
 
@@ -48,9 +47,10 @@ public class FragmentStatus extends Fragment {
 
     LinearLayout mLayout;
 
-    public int mMaxDisplayCount;
-    public int mMaxResponseCount;
-    public int mNewMaxResponseCount;
+    public final int mMaxDisplayCount;
+    public final int mMaxResponseCount;
+    public final int mNewMaxResponseCount;
+    private final int mMaxLimit;
 
     private BaseActivity mBaseActivity;
     private ArrayList<Status> mData;
@@ -295,7 +295,7 @@ public class FragmentStatus extends Fragment {
                     Pt.d("pos:" + pos);
                     Pt.d(mCallType + " onResponse");
                 } else {
-                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                             , Toast.LENGTH_SHORT).show();
                     Pt.d(mCallType + " unResponse");
                 }
@@ -305,7 +305,7 @@ public class FragmentStatus extends Fragment {
             @Override
             public void onTimeout() {
                 super.onTimeout();
-                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                         , Toast.LENGTH_SHORT).show();
                 Pt.d(mCallType + " onTimeout");
                 mRefresh.finishRefresh(false);
@@ -389,7 +389,7 @@ public class FragmentStatus extends Fragment {
                     Pt.d("pos:" + pos);
                     Pt.d(mCallType + " onResponse");
                 } else {
-                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                             , Toast.LENGTH_SHORT).show();
                     Pt.d(mCallType + " unResponse");
                 }
@@ -399,7 +399,7 @@ public class FragmentStatus extends Fragment {
             @Override
             public void onTimeout() {
                 super.onTimeout();
-                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                         , Toast.LENGTH_SHORT).show();
                 Pt.d(mCallType + " onTimeout");
                 mRefresh.finishLoadMore(false);

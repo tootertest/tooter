@@ -17,7 +17,7 @@ public class SharedVar {
     public static final int IMAGE_LIMIT = UNIT_1MB * 8;
     public static final int MP4_LIMIT = UNIT_1MB * 40;
 
-    public static final int RESPONSE_TIME_OUT = 3000;
+    public static final int RESPONSE_TIME_OUT = 5000;
     public static final int CONNECT_TIME_OUT = 10000;
 
     public static final String FILE_ROOT = "/mnt/sdcard/tooter/";

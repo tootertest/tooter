@@ -17,6 +17,7 @@ import com.jyb.tooter.R;
 import com.jyb.tooter.activitys.BaseActivity;
 import com.jyb.tooter.adapter.RecycleNotficationAdapter;
 import com.jyb.tooter.entity.Notification;
+import com.jyb.tooter.entity.Status;
 import com.jyb.tooter.job.Job;
 import com.jyb.tooter.job.maneger.JobManager;
 import com.jyb.tooter.utils.Pt;
@@ -30,7 +31,6 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import io.reactivex.annotations.NonNull;
@@ -52,9 +52,11 @@ public class FragmentNotfications extends Fragment {
 
     private ArrayList<Notification> mData;
     private BaseActivity mBaseActivity;
-    private int mMaxCacheCount;
-    private int mMaxDisplayCount;
-    private int mMaxResponseCount;
+
+    private final int mMaxDisplayCount;
+    private final int mMaxResponseCount;
+    private final int mNewMaxResponseCount;
+    private final int mMaxLimit;
 
     private Call<List<Notification>> mHttpCall;
 
@@ -63,9 +65,10 @@ public class FragmentNotfications extends Fragment {
         super();
         mBaseActivity = baseActivity;
         mData = new ArrayList<>();
-        mMaxCacheCount = 200;
-        mMaxDisplayCount = 50;
-        mMaxResponseCount = 5;
+        mMaxDisplayCount = 10;
+        mNewMaxResponseCount = 5;
+        mMaxResponseCount = mMaxDisplayCount + mNewMaxResponseCount;
+        mMaxLimit = 40;
     }
 
     public ArrayList<Notification> getData() {
@@ -126,14 +129,14 @@ public class FragmentNotfications extends Fragment {
             @Override
             public void onRefresh(RefreshLayout refreshLayout) {
 
-                Notification fristNotification = mData.size() == 0 ? null : mData.get(0);
-                String fristId = fristNotification == null ? null : fristNotification.id;
+                Notification notification = mData.size() == 0 ? null : mData.get(mData.size()-1);
+                String id = notification == null ? null : notification.id;
 
                 mHttpCall = null;
 
                 mHttpCall = mBaseActivity
                         .getMastApi()
-                        .notifications(null, fristId, mMaxResponseCount);
+                        .notifications(null, id, mMaxResponseCount);
 
                 updateHeader();
             }
@@ -143,14 +146,14 @@ public class FragmentNotfications extends Fragment {
             @Override
             public void onLoadMore(RefreshLayout refreshLayout) {
 
-                Notification lastNotification = mData.size() == 0 ? null : mData.get(mData.size() - 1);
-                String lastId = lastNotification == null ? null : lastNotification.id;
+                Notification notification = mData.size() == 0 ? null : mData.get(0);
+                String id = notification == null ? null : notification.id;
 
                 mHttpCall = null;
 
                 mHttpCall = mBaseActivity
                         .getMastApi()
-                        .notifications(lastId, null, mMaxResponseCount);
+                        .notifications(id, null, mMaxResponseCount);
 
                 updateLast();
             }
@@ -183,26 +186,83 @@ public class FragmentNotfications extends Fragment {
                 super.onReceive();
                 if (sResponse != null && sResponse.isSuccessful()) {
                     List<Notification> list = sResponse.body();
+                    List<Notification> nlist = new ArrayList<>();
 
-                    if (mMaxDisplayCount < mData.size() + list.size()) {
-                        for (int i = 0; i < mMaxResponseCount; i++) {
-                            mData.remove(mData.size() - 1);
+                    int limit = 0;
+                    if (list.size() < mMaxResponseCount) {
+                        limit = list.size();
+                    } else {
+                        limit = mMaxResponseCount;
+                    }
+                    for (int i = 0; i < list.size(); i++) {
+                        Pt.d("source item id:" + list.get(i).id);
+                    }
+                    for (int i = 0; i < limit; i++) {
+                        nlist.add(0, list.get(list.size() - 1 - i));
+                    }
+
+                    int pos = 0;
+
+                    if (mData.isEmpty()) {
+                        if (list.size() > mMaxDisplayCount) {
+
+                            for (int i = 0; i < mMaxDisplayCount; i++) {
+                                mData.add(list.get(i));
+                            }
+
+                        } else {
+                            mData.addAll(list);
+                        }
+                        for (int i = 0; i < list.size(); i++) {
+                            Pt.d("item id:" + list.get(i).id);
+                        }
+                        for (int i = 0; i < mData.size(); i++) {
+                            Pt.d("mData id:" + mData.get(i).id);
+                        }
+                    } else {
+
+                        Notification reff = mData.get(0);
+                        Notification refl = mData.get(mData.size() - 1);
+                        nlist.add(refl);
+                        if (nlist.size() > mMaxResponseCount) {
+                            nlist.remove(nlist.get(0));
+                        }
+                        Pt.d("reff id:" + reff.id);
+                        Pt.d("refl id:" + refl.id);
+                        for (int i = 0; i < nlist.size(); i++) {
+                            Pt.d("item id:" + nlist.get(i).id);
+                        }
+
+                        mData.clear();
+
+                        if (nlist.size() > mMaxDisplayCount) {
+                            for (int i = 0; i < mMaxDisplayCount; i++) {
+                                Notification notification = nlist.get(i);
+                                mData.add(notification);
+                                if (reff.id.equals(notification.id)) {
+                                    pos = i;
+                                }
+                                Pt.d("mData id:" + notification.id);
+                            }
+                        } else {
+                            mData.addAll(nlist);
+                            for (int i = 0; i < nlist.size(); i++) {
+                                Notification notification = nlist.get(i);
+                                if (reff.id.equals(notification.id)) {
+                                    pos = i;
+                                }
+                                Pt.d("mData id:" + notification.id);
+                            }
                         }
                     }
 
-//                    List<Notification> nlist =new ArrayList<>();
-//                    for (int i = 0; i < list.size(); i++) {
-//                        if (list.get(i).type== Notification.Type.MENTION){
-//                            continue;
-//                        }
-//                        nlist.add(list.get(i));
-//                    }
-
-                    mData.addAll(0,list);
                     mRecycleAdapter.notifyDataSetChanged();
+                    mRecycle.scrollToPosition(pos);
+                    Pt.d("add nlist size:" + nlist.size());
+                    Pt.d("pos:" + pos);
                     Pt.d("NOTIFICATION onResponse");
                 } else {
-                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                             , Toast.LENGTH_SHORT).show();
                     Pt.d("NOTIFICATION unResponse");
                 }
@@ -212,7 +272,7 @@ public class FragmentNotfications extends Fragment {
             @Override
             public void onTimeout() {
                 super.onTimeout();
-                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                         , Toast.LENGTH_SHORT).show();
                 Pt.d("NOTIFICATION onTimeout");
                 mRefresh.finishRefresh(false);
@@ -251,17 +311,51 @@ public class FragmentNotfications extends Fragment {
                 if (sResponse != null && sResponse.isSuccessful()) {
                     List<Notification> list = sResponse.body();
 
-                    if (mMaxDisplayCount < mData.size() + list.size()) {
-                        for (int i = 0; i < mMaxResponseCount; i++) {
-                            mData.remove(0);
+                    int pos = 0;
+
+                    if (mData.isEmpty()){
+                        if (list.size() > mMaxDisplayCount) {
+
+                            for (int i = 0; i < mMaxDisplayCount; i++) {
+                                mData.add(list.get(i));
+                            }
+
+                        } else {
+                            mData.addAll(list);
+                        }
+                    }else {
+
+                        Notification reff = mData.get(0);
+                        Notification refl = mData.get(mData.size() - 1);
+                        list.add(0, reff);
+                        list.remove(list.size() - 1);
+                        Pt.d("reff id:" + reff.id);
+                        Pt.d("refl id:" + refl.id);
+
+                        mData.clear();
+                        for (int i = 0; i < mMaxDisplayCount; i++) {
+                            Notification notification = list.get(list.size() - 1 - i);
+                            mData.add(0, notification);
+                            if (refl.id.equals(notification.id)) {
+                                pos = mMaxDisplayCount - 1 - i;
+                            }
+                        }
+
+                        for (int i = 0; i < list.size(); i++) {
+                            Pt.d("item id:" + list.get(i).id);
+                        }
+                        for (int i = 0; i < mData.size(); i++) {
+                            Pt.d("mData id:" + mData.get(i).id);
                         }
                     }
 
-                    mData.addAll(list);
                     mRecycleAdapter.notifyDataSetChanged();
+                    mRecycle.scrollToPosition(pos);
+                    Pt.d("add list size:" + list.size());
+                    Pt.d("pos:" + pos);
                     Pt.d("NOTIFICATION onResponse");
                 } else {
-                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                             , Toast.LENGTH_SHORT).show();
                     Pt.d("NOTIFICATION unResponse");
                 }
@@ -271,7 +365,7 @@ public class FragmentNotfications extends Fragment {
             @Override
             public void onTimeout() {
                 super.onTimeout();
-                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_refresh_error)
+                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                         , Toast.LENGTH_SHORT).show();
                 Pt.d("NOTIFICATION onTimeout");
                 mRefresh.finishLoadMore(false);

@@ -86,7 +86,13 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
             public void onClick(View v) {
                 Activity activity = mFragment.getActivity();
                 Intent intent = new Intent(activity, TootActivity.class);
-                String json = new Gson().toJson(status);
+                Status replieStatus;
+                if (status.getActionableStatus() == status) {
+                    replieStatus = status;
+                }else {
+                    replieStatus = status.getActionableStatus();
+                }
+                String json = new Gson().toJson(replieStatus);
                 intent.putExtra("status", json);
                 activity.startActivity(intent);
             }
@@ -158,7 +164,6 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                             }
                         }
                         status.favourited = cFav;
-//                        status.favouritesCount = cFavCount + "";
                         notifyItemChanged(position);
                         holder.getFavourite().setEnabled(true);
                         Pt.d("onReceive Error");
@@ -168,14 +173,13 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                     public void onTimeout() {
                         super.onTimeout();
                         status.favourited = cFav;
-//                        status.favouritesCount = cFavCount + "";
                         notifyItemChanged(position);
                         holder.getFavourite().setEnabled(true);
                         Pt.d("onTimeout");
                     }
                 };
                 JobManager.instance()
-                        .add(job);
+                        .addAnsyc(job);
             }
         });
 
@@ -260,7 +264,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                     }
                 };
                 JobManager.instance()
-                        .add(job);
+                        .addAnsyc(job);
             }
         });
 

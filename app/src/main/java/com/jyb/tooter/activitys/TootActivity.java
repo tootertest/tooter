@@ -123,7 +123,7 @@ public class TootActivity extends BaseActivity {
                 };
 
                 JobManager.instance()
-                        .add(job);
+                        .addAnsyc(job);
                 mBtnSend.setEnabled(false);
                 finish();
             }

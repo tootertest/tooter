@@ -50,7 +50,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         Notification notification = mData.get(position);
 
         holder.clean();
-        holder.setControllerGroupVisibility(false);
 
         switch (notification.type) {
             case FOLLOW:
@@ -69,6 +68,8 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
     }
 
     private void follow(StatusHolder holder, Notification notification) {
+
+        holder.setControllerGroupGONE(true,false,false,true);
 
         Account account = notification.account;
         String username = account.acct;
@@ -105,6 +106,8 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
     }
 
     private void reblog(StatusHolder holder, Notification notification) {
+
+        holder.setControllerGroupGONE(true,false,false,true);
 
         Status status = notification.status;
         String username = notification.account.acct;
@@ -155,6 +158,8 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
     }
 
     private void favourite(StatusHolder holder, Notification notification) {
+
+        holder.setControllerGroupGONE(true,false,false,true);
 
         Status status = notification.status;
         String username = notification.account.acct;
