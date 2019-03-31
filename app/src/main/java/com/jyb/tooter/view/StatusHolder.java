@@ -102,7 +102,19 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         mImageStatusType = itemView.findViewById(R.id.status_type);
     }
 
-    public void setFavourites(boolean flag) {
+    public ViewGroup getReplie() {
+        return mLayoutReplies;
+    }
+
+    public ViewGroup getReblog() {
+        return mLayoutReblogs;
+    }
+
+    public ViewGroup getFavourite() {
+        return mLayoutFavourites;
+    }
+
+    public void setFavouriteSelete(boolean flag) {
         if (flag) {
             Drawable drawable = new IconicsDrawable(mView.getContext())
                     .icon(FontAwesome.Icon.faw_star)
@@ -114,7 +126,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setReblogs(boolean flag) {
+    public void setReblogSelecte(boolean flag) {
         if (flag) {
             Drawable drawable = new IconicsDrawable(mView.getContext())
                     .icon(FontAwesome.Icon.faw_retweet)
@@ -134,19 +146,19 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         mContent.setText(spanned);
     }
 
-    public void setRRFCount(String  count1, String  count2, String  count3) {
+    public void setRRFCount(String count1, String count2, String count3) {
         mRepliesCount.setText(count1);
         mReblogsCount.setText(count2);
         mFavouritesCount.setText(count3);
     }
 
-    public void setControllerGroupVisibility(boolean flag){
-        if (flag){
+    public void setControllerGroupVisibility(boolean flag) {
+        if (flag) {
             mLayoutReplies.setVisibility(View.VISIBLE);
             mLayoutReblogs.setVisibility(View.VISIBLE);
             mLayoutFavourites.setVisibility(View.VISIBLE);
             mImageMore.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             mLayoutReplies.setVisibility(View.GONE);
             mLayoutReblogs.setVisibility(View.GONE);
             mLayoutFavourites.setVisibility(View.GONE);
@@ -154,22 +166,45 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setStatusType(Drawable drawable){
+    public void setControllerGroupVisibility(boolean flag1, boolean flag2, boolean flag3, boolean flag4) {
+        if (flag1) {
+            mLayoutReplies.setVisibility(View.VISIBLE);
+        } else {
+            mLayoutReplies.setVisibility(View.GONE);
+        }
+        if (flag2) {
+            mLayoutReblogs.setVisibility(View.VISIBLE);
+        } else {
+            mLayoutReblogs.setVisibility(View.GONE);
+        }
+        if (flag3) {
+            mLayoutFavourites.setVisibility(View.VISIBLE);
+        } else {
+            mLayoutFavourites.setVisibility(View.GONE);
+        }
+        if (flag4) {
+            mImageMore.setVisibility(View.VISIBLE);
+        } else {
+            mImageMore.setVisibility(View.GONE);
+        }
+    }
+
+    public void setStatusType(Drawable drawable) {
         mImageStatusType.setImageDrawable(drawable);
     }
 
-    public void setDate(Date date){
+    public void setDate(Date date) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
                 Locale.getDefault());
         String dateStr = format.format(date);
         mDate.setText(dateStr);
     }
 
-    public void addAvatar(View view){
+    public void addAvatar(View view) {
         mAvatarLayout.addView(view);
     }
 
-    public void addMedias(View view){
+    public void addMedias(View view) {
         mMediaLayout.addView(view);
     }
 

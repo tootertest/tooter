@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -27,21 +26,20 @@ import com.jyb.tooter.job.Job;
 import com.jyb.tooter.job.maneger.JobManager;
 import com.jyb.tooter.utils.HtmlUtils;
 import com.jyb.tooter.utils.Pt;
+import com.jyb.tooter.view.StatusHolder;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 import io.reactivex.annotations.NonNull;
 import retrofit2.Response;
 
-public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdapter.SimpleHolder> {
+public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
 
     FragmentStatus mFragment;
     ArrayList<Status> mData;
@@ -54,41 +52,36 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
 
     @NonNull
     @Override
-    public SimpleHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public StatusHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         mView = LayoutInflater.from(parent.getContext()).inflate(R.layout.status_layout, parent, false);
-        SimpleHolder holder = new SimpleHolder(mView);
+        StatusHolder holder = new StatusHolder(mView, mFragment);
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final SimpleHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final StatusHolder holder, final int position) {
         final Status status = mData.get(position);
-
-        holder.mAvatarLayout.removeAllViews();
-        holder.mImageStatusType.setImageDrawable(null);
 
         String username = status.account.acct;
         String displayName = status.account.displayName;
         String name = displayName.equals("") ? username : displayName;
 
+        holder.clean();
+
         Spanned spdName = HtmlUtils.fromHtml(name);
-        holder.mUsername.setText(spdName);
+        holder.setUsername(spdName);
 
         Spanned spdContent = HtmlUtils.fromHtml(status.content);
-        holder.mText.setText(spdContent);
+        holder.setContent(spdContent);
 
         final Date date = status.createdAt;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
-                Locale.getDefault());
-        String dateStr = format.format(date);
+        holder.setDate(date);
 
-        holder.mDate.setText(dateStr);
+        holder.setRRFCount(status.repliesCount,
+                status.reblogsCount,
+                status.favouritesCount);
 
-        holder.mRepliesCount.setText(status.repliesCount);
-        holder.mReblogsCount.setText(status.reblogsCount);
-        holder.mFavouritesCount.setText(status.favouritesCount);
-
-        holder.mLayoutReplies.setOnClickListener(new View.OnClickListener() {
+        holder.getReplie().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Activity activity = mFragment.getActivity();
@@ -99,18 +92,16 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
             }
         });
 
-        holder.setFavourites(status.favourited);
-
-        holder.mLayoutFavourites.setOnClickListener(new View.OnClickListener() {
+        holder.setFavouriteSelete(status.favourited);
+        holder.getFavourite().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                holder.mLayoutFavourites.setEnabled(false);
+                holder.getFavourite().setEnabled(false);
 
                 Job job = new Job() {
 
                     boolean cFav;
-//                    int cFavCount;
 
                     Response<Status> response;
 
@@ -161,7 +152,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
                                     status.favouritesCount = count + "";
                                 }
                                 notifyItemChanged(position);
-                                holder.mLayoutFavourites.setEnabled(true);
+                                holder.getFavourite().setEnabled(true);
                                 Pt.d("onReceive");
                                 return;
                             }
@@ -169,7 +160,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
                         status.favourited = cFav;
 //                        status.favouritesCount = cFavCount + "";
                         notifyItemChanged(position);
-                        holder.mLayoutFavourites.setEnabled(true);
+                        holder.getFavourite().setEnabled(true);
                         Pt.d("onReceive Error");
                     }
 
@@ -179,7 +170,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
                         status.favourited = cFav;
 //                        status.favouritesCount = cFavCount + "";
                         notifyItemChanged(position);
-                        holder.mLayoutFavourites.setEnabled(true);
+                        holder.getFavourite().setEnabled(true);
                         Pt.d("onTimeout");
                     }
                 };
@@ -188,18 +179,16 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
             }
         });
 
-        holder.setReblogs(status.reblogged);
-
-        holder.mLayoutReblogs.setOnClickListener(new View.OnClickListener() {
+        holder.setReblogSelecte(status.reblogged);
+        holder.getReblog().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                holder.mLayoutReblogs.setEnabled(false);
+                holder.getReblog().setEnabled(false);
 
                 Job job = new Job() {
 
                     boolean cReb;
-//                    int cFavCount;
 
                     Response<Status> response;
 
@@ -250,15 +239,14 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
                                     status.reblogsCount = count + "";
                                 }
                                 notifyItemChanged(position);
-                                holder.mLayoutReblogs.setEnabled(true);
+                                holder.getReblog().setEnabled(true);
                                 Pt.d("onReceive");
                                 return;
                             }
                         }
                         status.reblogged = cReb;
-//                        status.favouritesCount = cFavCount + "";
                         notifyItemChanged(position);
-                        holder.mLayoutReblogs.setEnabled(true);
+                        holder.getReblog().setEnabled(true);
                         Pt.d("onReceive Error");
                     }
 
@@ -266,9 +254,8 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
                     public void onTimeout() {
                         super.onTimeout();
                         status.reblogged = cReb;
-//                        status.favouritesCount = cFavCount + "";
                         notifyItemChanged(position);
-                        holder.mLayoutReblogs.setEnabled(true);
+                        holder.getReblog().setEnabled(true);
                         Pt.d("onTimeout");
                     }
                 };
@@ -277,10 +264,10 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
             }
         });
 
+
         float radius = 16;
         float borderWidth = 1;
         int borderColor = Color.LTGRAY;
-        holder.mImageStatusType.setBackground(null);
         String avtUrl1 = status.account.avatar;
 
         if (status.getActionableStatus() == status) {
@@ -292,7 +279,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
             Picasso.get()
                     .load(avtUrl1)
                     .into(roundImage1);
-            holder.mAvatarLayout.addView(view);
+            holder.addAvatar(view);
         } else {
             View view = LayoutInflater.from(mView.getContext()).inflate(R.layout.status_item_avatar_layout2, null, false);
             RoundedImageView roundImage1 = view.findViewById(R.id.avt1);
@@ -314,17 +301,14 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
             Picasso.get()
                     .load(avtUrl2)
                     .into(roundImage2);
-            holder.mAvatarLayout.addView(view);
+            holder.addAvatar(view);
 
             Drawable avtType = new IconicsDrawable(mView.getContext())
                     .icon(FontAwesome.Icon.faw_retweet)
                     .color(mFragment.getResources().getColor(R.color.status_button_dark))
-//                        .color(Color.RED)
                     .sizeDp(22);
-            holder.mImageStatusType.setBackground(avtType);
+            holder.setStatusType(avtType);
         }
-
-        holder.mMediaLayout.removeAllViews();
 
 //        Pt.d("position:" + position);
 //        Pt.d("id:" + status.id);
@@ -356,7 +340,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
                     Picasso.get()
                             .load(media.previewUrl)
                             .into(imageView);
-                    holder.mMediaLayout.addView(imageView);
+                    holder.addMedias(imageView);
 
                     imageView.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -412,7 +396,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<RecycleStatusAdap
 
         ImageView mImageStatusType;
 
-         SimpleHolder(View itemView) {
+        SimpleHolder(View itemView) {
             super(itemView);
 
             mDrawableReplies = new IconicsDrawable(mView.getContext())

@@ -1,46 +1,30 @@
 package com.jyb.tooter.adapter;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 
-import com.google.gson.Gson;
 import com.jyb.tooter.R;
-import com.jyb.tooter.activitys.TootActivity;
-import com.jyb.tooter.dialog.DialogModalImage;
 import com.jyb.tooter.entity.Account;
 import com.jyb.tooter.entity.Notification;
 import com.jyb.tooter.entity.Status;
 import com.jyb.tooter.fragments.FragmentNotfications;
-import com.jyb.tooter.job.Job;
-import com.jyb.tooter.job.maneger.JobManager;
 import com.jyb.tooter.utils.HtmlUtils;
-import com.jyb.tooter.utils.Pt;
 import com.jyb.tooter.view.StatusHolder;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 import io.reactivex.annotations.NonNull;
-import retrofit2.Response;
 
 public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder> {
 
@@ -90,7 +74,7 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         String username = account.acct;
         String displayName = account.displayName;
         String name = displayName.equals("") ? username : displayName;
-        name+="<strong>关注了你</strong>";
+        name += mFragment.getString(R.string.strong_follow);
         String avatarUrl = account.avatar;
 
         Spanned spdName = HtmlUtils.fromHtml(name);
@@ -126,7 +110,7 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         String username = notification.account.acct;
         String displayName = notification.account.displayName;
         String name = displayName.equals("") ? username : displayName;
-        name+="<strong>转嘟了你</strong>";
+        name += mFragment.getString(R.string.strong_reblog);
         String avtUrl1 = notification.account.avatar;
 
         Spanned spdName = HtmlUtils.fromHtml(name);
@@ -176,7 +160,7 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         String username = notification.account.acct;
         String displayName = notification.account.displayName;
         String name = displayName.equals("") ? username : displayName;
-        name+="<strong>收藏了你</strong>";
+        name += mFragment.getString(R.string.strong_favourite);
         String avtUrl1 = notification.account.avatar;
 
         Spanned spdName = HtmlUtils.fromHtml(name);
@@ -227,7 +211,7 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         String username = status.account.acct;
         String displayName = status.account.displayName;
         String name = displayName.equals("") ? username : displayName;
-        name+="<strong>回复了你</strong>";
+        name += mFragment.getString(R.string.strong_mention);
         Spanned spdName = HtmlUtils.fromHtml(name);
         holder.setUsername(spdName);
 
@@ -237,11 +221,11 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         final Date date = status.createdAt;
         holder.setDate(date);
 
-        holder.setRRFCount(status.repliesCount,status.reblogsCount,status.favouritesCount);
+        holder.setRRFCount(status.repliesCount, status.reblogsCount, status.favouritesCount);
 
-        holder.setFavourites(status.favourited);
+        holder.setFavouriteSelete(status.favourited);
 
-        holder.setReblogs(status.reblogged);
+        holder.setReblogSelecte(status.reblogged);
 
         float radius = 16;
         float borderWidth = 1;
