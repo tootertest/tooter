@@ -1,0 +1,194 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.Design.Light.NoActionBar">
+         Customize your theme here.
+        <item name="colorPrimary">@color/color_primary_dark</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark_dark</item>
+        <item name="colorAccent">@color/color_accent_dark</item>
+        <item name="colorButtonNormal">@color/button_dark</item>
+    </style>
+    <style name="TabLayoutTextStyle" parent="TextAppearance.Design.Tab">
+        <!--<item name="android:textAllCaps">false</item>-->
+        <item name="textAllCaps">false</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="DialogStyle" parent="@android:style/Theme.Holo.Light.Dialog">
+        <!-- 窗口背景色 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!--是否有覆盖-->
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- 浮于Activity之上 -->
+        <item name="android:windowIsFloating">true</item>
+        <!-- 边框 -->
+        <item name="android:windowFrame">@null</item>
+        <!-- Dialog以外的区域模糊效果 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- 无标题 -->
+        <item name="android:windowNoTitle">true</item>
+        <!-- 半透明 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!--进出动画-->
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+    </style>
+
+    <!--<style name="DrawStyle" parent="MaterialDrawer.Light.DrawerArrowStyle">-->
+        <!--&lt;!&ndash;<item name="android:textAllCaps">false</item>&ndash;&gt;-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.Account.AppBarLayout" parent="ThemeOverlay.AppCompat">-->
+        <!--<item name="android:textColorPrimary">@color/text_color_primary_dark</item>-->
+        <!--<item name="android:textColorSecondary">@color/text_color_secondary_dark</item>-->
+        <!--<item name="android:textColorTertiary">@color/text_color_tertiary_dark</item>-->
+    <!--</style>-->
+
+    <!--&lt;!&ndash;Base Application Theme Styles (Dark)&ndash;&gt;-->
+
+    <!--<style name="AppTheme" parent="Theme.AppCompat.NoActionBar">-->
+        <!--<item name="colorPrimary">@color/color_primary_dark</item>-->
+        <!--<item name="colorPrimaryDark">@color/color_primary_dark_dark</item>-->
+        <!--<item name="colorAccent">@color/color_accent_dark</item>-->
+        <!--<item name="colorButtonNormal">@color/button_dark</item>-->
+
+        <!--<item name="android:colorBackground">@color/color_primary_dark_dark</item>-->
+        <!--<item name="android:windowBackground">@color/window_background_dark</item>-->
+        <!--<item name="android:editTextColor">@color/edit_text_color_dark</item>-->
+        <!--<item name="android:textColorPrimary">@color/text_color_primary_dark</item>-->
+        <!--<item name="android:textColorSecondary">@color/text_color_secondary_dark</item>-->
+        <!--<item name="android:textColorTertiary">@color/text_color_tertiary_dark</item>-->
+        <!--<item name="android:textColorPrimaryInverse">@color/text_color_primary_inverse_dark</item>-->
+        <!--<item name="android:textColorSecondaryInverse">@color/text_color_secondary_inverse_dark</item>-->
+        <!--<item name="android:textColorTertiaryInverse">@color/text_color_tertiary_inverse_dark</item>-->
+        <!--<item name="android:actionMenuTextColor">@color/text_color_primary_dark</item>-->
+
+        <!--<item name="bottomSheetDialogTheme">@style/AppTheme.BottomSheetDialog.Dark</item>-->
+
+        <!--<item name="toolbar_background_color">@color/toolbar_background_dark</item>-->
+        <!--<item name="toolbar_icon_tint">@color/toolbar_icon_dark</item>-->
+        <!--<item name="image_button_style">@style/AppTheme.ImageButton.Dark</item>-->
+        <!--<item name="status_reblog_inactive_drawable">@drawable/reblog_inactive_dark</item>-->
+        <!--<item name="status_reblog_disabled_drawable">@drawable/reblog_disabled_dark</item>-->
+        <!--<item name="status_favourite_inactive_drawable">@drawable/favourite_inactive_dark</item>-->
+        <!--<item name="status_favourite_button_marked_tint">@color/status_favourite_button_marked_dark</item>-->
+        <!--<item name="content_warning_button">@drawable/toggle_small</item>-->
+        <!--<item name="sensitive_media_warning_background_color">@color/color_background_dark</item>-->
+        <!--<item name="media_preview_unloaded_drawable">@drawable/media_preview_unloaded_dark</item>-->
+        <!--<item name="status_divider_drawable">@drawable/status_divider_dark</item>-->
+        <!--<item name="tab_page_margin_drawable">@drawable/tab_page_margin_dark</item>-->
+        <!--<item name="account_header_background_color">@color/account_header_background_dark</item>-->
+        <!--<item name="account_toolbar_icon_tint_uncollapsed">@color/toolbar_icon_dark</item>-->
+        <!--<item name="account_toolbar_icon_tint_collapsed">@color/account_toolbar_icon_collapsed_dark</item>-->
+        <!--<item name="account_toolbar_popup_theme">@style/AppTheme.Account.ToolbarPopupTheme.Dark</item>-->
+        <!--<item name="compose_media_button_tint">@color/compose_media_button_dark</item>-->
+        <!--<item name="compose_media_button_disabled_tint">@color/compose_media_button_disabled_dark</item>-->
+        <!--<item name="compose_mention_color">@color/color_accent_dark</item>-->
+        <!--<item name="compose_content_warning_bar_background">@drawable/border_background_dark</item>-->
+        <!--<item name="notification_content">@color/notification_content_faded_dark</item>-->
+        <!--<item name="notification_icon_tint">@color/notification_icon_tint_dark</item>-->
+        <!--<item name="report_status_background_color">@color/color_background_dark</item>-->
+        <!--<item name="report_status_divider_drawable">@drawable/status_divider_dark</item>-->
+
+        <!--<item name="material_drawer_background">@color/window_background_dark</item>-->
+        <!--<item name="material_drawer_primary_text">@color/text_color_primary_dark</item>-->
+        <!--<item name="material_drawer_primary_icon">@color/toolbar_icon_dark</item>-->
+        <!--<item name="material_drawer_secondary_text">@color/text_color_secondary_dark</item>-->
+        <!--<item name="material_drawer_hint_text">@color/text_color_tertiary_dark</item>-->
+        <!--<item name="material_drawer_divider">@color/color_primary_dark_dark</item>-->
+        <!--<item name="material_drawer_selected">@color/color_primary_dark</item>-->
+        <!--<item name="material_drawer_selected_text">@color/text_color_primary_dark</item>-->
+        <!--<item name="material_drawer_header_selection_text">@color/text_color_primary_dark</item>-->
+
+        <!--<item name="floatingSearch_backgroundColor">@color/toolbar_background_dark</item>-->
+        <!--<item name="floatingSearch_viewTextColor">@color/text_color_secondary_dark</item>-->
+        <!--<item name="floatingSearch_hintTextColor">@color/text_color_tertiary_dark</item>-->
+        <!--<item name="floatingSearch_dividerColor">@color/status_divider_dark</item>-->
+        <!--<item name="floatingSearch_clearBtnColor">@color/toolbar_icon_dark</item>-->
+        <!--<item name="floatingSearch_leftActionColor">@color/toolbar_icon_dark</item>-->
+        <!--<item name="floatingSearch_menuItemIconColor">@color/toolbar_icon_dark</item>-->
+        <!--<item name="floatingSearch_suggestionRightIconColor">@color/toolbar_icon_dark</item>-->
+        <!--<item name="floatingSearch_actionMenuOverflowColor">@color/toolbar_icon_dark</item>&ndash;&gt;-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.ImageButton.Dark" parent="@style/Widget.AppCompat.Button.Borderless.Colored">-->
+        <!--<item name="android:tint">@color/image_button_dark</item>-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.BottomSheetDialog.Dark" parent="@style/Theme.Design.BottomSheetDialog">-->
+        <!--<item name="colorAccent">@color/color_accent_dark</item>-->
+        <!--<item name="android:colorBackground">@color/color_background_dark</item>-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.Account.ToolbarPopupTheme.Dark" parent="ThemeOverlay.AppCompat">-->
+        <!--<item name="android:textColorPrimary">@color/text_color_primary_dark</item>-->
+        <!--<item name="android:windowActionBarOverlay">true</item>-->
+        <!--<item name="windowActionBarOverlay">true</item>-->
+    <!--</style>-->
+
+    <!--<style name="Dialog.FullScreen" parent="Theme.AppCompat.Dialog">-->
+        <!--<item name="android:padding">0dp</item>-->
+        <!--<item name="android:windowBackground">@android:color/black</item>-->
+    <!--</style>-->
+
+    <!--&lt;!&ndash;Light Application Theme Styles&ndash;&gt;-->
+
+    <!--<style name="AppTheme.Light" parent="Theme.AppCompat.Light.NoActionBar">-->
+        <!--<item name="colorPrimary">@color/color_primary_light</item>-->
+        <!--<item name="colorPrimaryDark">@color/color_primary_dark_light</item>-->
+        <!--<item name="colorAccent">@color/color_accent_light</item>-->
+        <!--<item name="colorButtonNormal">@color/button_light</item>-->
+
+        <!--<item name="android:colorBackground">@color/color_background_light</item>-->
+        <!--<item name="android:windowBackground">@color/window_background_light</item>-->
+        <!--<item name="android:editTextColor">@color/edit_text_color_light</item>-->
+        <!--<item name="android:textColorPrimary">@color/text_color_primary_light</item>-->
+        <!--<item name="android:textColorSecondary">@color/text_color_secondary_light</item>-->
+        <!--<item name="android:textColorTertiary">@color/text_color_tertiary_light</item>-->
+        <!--<item name="android:textColorPrimaryInverse">@color/text_color_primary_inverse_light</item>-->
+        <!--<item name="android:textColorSecondaryInverse">@color/text_color_secondary_inverse_light</item>-->
+        <!--<item name="android:textColorTertiaryInverse">@color/text_color_tertiary_inverse_light</item>-->
+        <!--<item name="android:actionMenuTextColor">@color/text_color_primary_light</item>-->
+
+        <!--<item name="bottomSheetDialogTheme">@style/AppTheme.BottomSheetDialog.Light</item>-->
+
+        <!--<item name="toolbar_background_color">@color/toolbar_background_light</item>-->
+        <!--<item name="toolbar_icon_tint">@color/toolbar_icon_light</item>-->
+        <!--<item name="image_button_style">@style/AppTheme.ImageButton.Light</item>-->
+        <!--<item name="status_reblog_inactive_drawable">@drawable/reblog_inactive_light</item>-->
+        <!--<item name="status_reblog_disabled_drawable">@drawable/reblog_disabled_light</item>-->
+        <!--<item name="status_favourite_inactive_drawable">@drawable/favourite_inactive_light</item>-->
+        <!--<item name="status_favourite_button_marked_tint">@color/status_favourite_button_marked_light</item>-->
+        <!--<item name="content_warning_button">@drawable/toggle_small_light</item>-->
+        <!--<item name="sensitive_media_warning_background_color">@color/sensitive_media_warning_background_light</item>-->
+        <!--<item name="media_preview_unloaded_drawable">@drawable/media_preview_unloaded_light</item>-->
+        <!--<item name="status_divider_drawable">@drawable/status_divider_light</item>-->
+        <!--<item name="tab_page_margin_drawable">@drawable/tab_page_margin_light</item>-->
+        <!--<item name="account_toolbar_icon_tint_uncollapsed">@color/toolbar_icon_dark</item> &lt;!&ndash;Default to dark on purpose, because header backgrounds with gradients are always dark.&ndash;&gt;-->
+        <!--<item name="account_toolbar_icon_tint_collapsed">@color/account_toolbar_icon_collapsed_light</item>-->
+        <!--<item name="account_toolbar_popup_theme">@style/AppTheme.Account.ToolbarPopupTheme.Light</item>-->
+        <!--<item name="account_header_background_color">@color/account_header_background_light</item>-->
+        <!--<item name="compose_media_button_tint">@color/compose_media_button_light</item>-->
+        <!--<item name="compose_media_button_disabled_tint">@color/compose_media_button_disabled_light</item>-->
+        <!--<item name="compose_mention_color">@color/compose_mention_light</item>-->
+        <!--<item name="compose_content_warning_bar_background">@drawable/border_background_light</item>-->
+        <!--<item name="notification_content">@color/notification_content_faded_light</item>-->
+        <!--<item name="notification_icon_tint">@color/notification_icon_tint_light</item>-->
+        <!--<item name="report_status_background_color">@color/report_status_background_light</item>-->
+        <!--<item name="report_status_divider_drawable">@drawable/report_status_divider_light</item>-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.ImageButton.Light" parent="Widget.AppCompat.Button.Borderless.Colored">-->
+        <!--<item name="android:tint">@color/image_button_light</item>-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.BottomSheetDialog.Light" parent="@style/Theme.Design.Light.BottomSheetDialog">-->
+        <!--<item name="colorAccent">@color/color_accent_light</item>-->
+        <!--<item name="android:colorBackground">@color/color_background_light</item>-->
+    <!--</style>-->
+
+    <!--<style name="AppTheme.Account.ToolbarPopupTheme.Light" parent="ThemeOverlay.AppCompat">-->
+        <!--<item name="android:textColorPrimary">@color/text_color_primary_light</item>-->
+        <!--<item name="android:windowActionBarOverlay">true</item>-->
+        <!--<item name="windowActionBarOverlay">true</item>-->
+    <!--</style>-->
+</resources>
