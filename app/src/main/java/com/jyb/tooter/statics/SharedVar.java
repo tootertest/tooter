@@ -1,5 +1,7 @@
 package com.jyb.tooter.statics;
 
+import com.jyb.tooter.entity.Account;
+
 public class SharedVar {
     public static final String KEY = "TOTER";
     public static final String DOMAIN = "domain";
@@ -24,4 +26,6 @@ public class SharedVar {
 //    public static final String FILE_TOKEN = "token/";
     public static final String FILE_MEDIA = "media/";
     public static final String FILE_AUDIO = "audio/";
+
+    public static Account ACCOUNT;
 }

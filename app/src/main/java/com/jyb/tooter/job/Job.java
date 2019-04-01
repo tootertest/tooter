@@ -10,21 +10,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Job {
 
-    private int mId = JobManager.instance().newId();
-    private String mTag = null;
-    private JobStatus mStatus = null;
+    private int mId;
+    private String mTag;
+    private JobStatus mStatus;
 
-    private long mTimeStrat = 0;
-    private long mTimeout = SharedVar.RESPONSE_TIME_OUT;
+    private long mTimeStrat;
+    private long mTimeout;
 
-    private AtomicBoolean mLock = new AtomicBoolean(false);
+    private AtomicBoolean mLock;
 
     public Job() {
-
+        init();
     }
 
     public Job(int timeout) {
+        init();
         mTimeout = timeout;
+    }
+
+    private void init() {
+        mId = JobManager.get().newId();
+        mTag = null;
+        mStatus = null;
+        mTimeStrat = 0;
+        mTimeout = SharedVar.RESPONSE_TIME_OUT;
+        mLock = new AtomicBoolean(false);
     }
 
     public AtomicBoolean getLock() {
@@ -83,6 +93,11 @@ public class Job {
 
     public void lock() {
         getLock().set(true);
+    }
+
+    public Job reset() {
+        init();
+        return this;
     }
 
 }

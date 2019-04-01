@@ -24,6 +24,7 @@ import com.jyb.tooter.entity.Status;
 import com.jyb.tooter.fragments.FragmentStatus;
 import com.jyb.tooter.job.Job;
 import com.jyb.tooter.job.maneger.JobManager;
+import com.jyb.tooter.model.Toot;
 import com.jyb.tooter.utils.HtmlUtils;
 import com.jyb.tooter.utils.Pt;
 import com.jyb.tooter.view.StatusHolder;
@@ -60,130 +61,60 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final StatusHolder holder, final int position) {
+
         final Status status = mData.get(position);
+        final Status actionableStatus = status.getActionableStatus();
+        final Status cStatus;
 
-        String username = status.account.acct;
-        String displayName = status.account.displayName;
-        String name = displayName.equals("") ? username : displayName;
-
-        holder.clean();
-
-        Spanned spdName = HtmlUtils.fromHtml(name);
-        holder.setUsername(spdName);
-
-        Spanned spdContent = HtmlUtils.fromHtml(status.content);
-        holder.setContent(spdContent);
+        holder.clear();
 
         final Date date = status.createdAt;
         holder.setDate(date);
 
-        holder.setRRFCount(status.repliesCount,
-                status.reblogsCount,
-                status.favouritesCount);
+        if (status == actionableStatus) {
+
+            cStatus = status;
+
+        } else {
+
+            cStatus = actionableStatus;
+
+        }
+
+        String username = cStatus.account.acct;
+        String displayName = cStatus.account.displayName;
+        String name = displayName.equals("") ? username : displayName;
+
+        Spanned spdName = HtmlUtils.fromHtml(name);
+        holder.setUsername(spdName);
+
+        Spanned spdContent = HtmlUtils.fromHtml(cStatus.content);
+        holder.setContent(spdContent);
+
+        holder.setRRFCount(cStatus.repliesCount,
+                cStatus.reblogsCount,
+                cStatus.favouritesCount);
 
         holder.getReplie().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Activity activity = mFragment.getActivity();
                 Intent intent = new Intent(activity, TootActivity.class);
-                Status replieStatus;
-                if (status.getActionableStatus() == status) {
-                    replieStatus = status;
-                }else {
-                    replieStatus = status.getActionableStatus();
-                }
-                String json = new Gson().toJson(replieStatus);
-                intent.putExtra("status", json);
+                Toot toot = new Toot();
+                toot.getMentions()
+                        .add("@" + cStatus.account.acct);
+//                for (int i = 0; i < cStatus.mentions.length; i++) {
+//                    toot.getMentions()
+//                            .add("@" + status.mentions[i].acct);
+//                }
+                toot.replyId = cStatus.id;
+                String gson = new Gson().toJson(toot);
+                intent.putExtra("toot", gson);
                 activity.startActivity(intent);
             }
         });
 
-        holder.setFavouriteSelete(status.favourited);
-        holder.getFavourite().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                holder.getFavourite().setEnabled(false);
-
-                Job job = new Job() {
-
-                    boolean cFav;
-
-                    Response<Status> response;
-
-                    @Override
-                    public void onStart() {
-                        super.onStart();
-                        cFav = status.favourited;
-                        status.favourited = !cFav;
-                        notifyItemChanged(position);
-                        Pt.d("onStart");
-                    }
-
-                    @Override
-                    public void onSend() {
-                        super.onSend();
-                        try {
-                            if (!cFav) {
-                                response = mFragment.getBaseActivity()
-                                        .getMastApi()
-                                        .favouriteStatus(status.id)
-                                        .execute();
-                            } else {
-                                response = mFragment.getBaseActivity()
-                                        .getMastApi()
-                                        .unfavouriteStatus(status.id)
-                                        .execute();
-                            }
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Pt.d("onSend");
-                    }
-
-                    @Override
-                    public void onReceive() {
-                        super.onReceive();
-                        if (response != null && response.isSuccessful()) {
-                            Status respStatus = response.body();
-                            if (respStatus != null) {
-                                status.favourited = respStatus.favourited;
-                                if (respStatus.favourited) {
-                                    status.favouritesCount = respStatus.favouritesCount;
-                                } else {
-                                    int count = Integer.parseInt(respStatus.favouritesCount);
-                                    count -= 1;
-                                    if (count < 0) count = 0;
-                                    status.favouritesCount = count + "";
-                                }
-                                notifyItemChanged(position);
-                                holder.getFavourite().setEnabled(true);
-                                Pt.d("onReceive");
-                                return;
-                            }
-                        }
-                        status.favourited = cFav;
-                        notifyItemChanged(position);
-                        holder.getFavourite().setEnabled(true);
-                        Pt.d("onReceive Error");
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        super.onTimeout();
-                        status.favourited = cFav;
-                        notifyItemChanged(position);
-                        holder.getFavourite().setEnabled(true);
-                        Pt.d("onTimeout");
-                    }
-                };
-                JobManager.instance()
-                        .addAnsyc(job);
-            }
-        });
-
-        holder.setReblogSelecte(status.reblogged);
+        holder.setReblogSelecte(cStatus.reblogged);
         holder.getReblog().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -199,8 +130,8 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                     @Override
                     public void onStart() {
                         super.onStart();
-                        cReb = status.reblogged;
-                        status.reblogged = !cReb;
+                        cReb = cStatus.reblogged;
+                        cStatus.reblogged = !cReb;
                         notifyItemChanged(position);
                         Pt.d("onStart");
                     }
@@ -212,12 +143,12 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                             if (!cReb) {
                                 response = mFragment.getBaseActivity()
                                         .getMastApi()
-                                        .reblogStatus(status.id)
+                                        .reblogStatus(cStatus.id)
                                         .execute();
                             } else {
                                 response = mFragment.getBaseActivity()
                                         .getMastApi()
-                                        .unreblogStatus(status.id)
+                                        .unreblogStatus(cStatus.id)
                                         .execute();
                             }
 
@@ -233,14 +164,14 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                status.reblogged = respStatus.reblogged;
+                                cStatus.reblogged = respStatus.reblogged;
                                 int count = Integer.parseInt(respStatus.reblogsCount);
                                 if (respStatus.reblogged) {
-                                    status.reblogsCount = count + 1 + "";
+                                    cStatus.reblogsCount = count + 1 + "";
                                 } else {
                                     count -= 1;
                                     if (count < 0) count = 0;
-                                    status.reblogsCount = count + "";
+                                    cStatus.reblogsCount = count + "";
                                 }
                                 notifyItemChanged(position);
                                 holder.getReblog().setEnabled(true);
@@ -248,7 +179,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                                 return;
                             }
                         }
-                        status.reblogged = cReb;
+                        cStatus.reblogged = cReb;
                         notifyItemChanged(position);
                         holder.getReblog().setEnabled(true);
                         Pt.d("onReceive Error");
@@ -257,24 +188,108 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                     @Override
                     public void onTimeout() {
                         super.onTimeout();
-                        status.reblogged = cReb;
+                        cStatus.reblogged = cReb;
                         notifyItemChanged(position);
                         holder.getReblog().setEnabled(true);
                         Pt.d("onTimeout");
                     }
                 };
-                JobManager.instance()
+                JobManager.get()
                         .addAnsyc(job);
             }
         });
 
+        holder.setFavouriteSelete(cStatus.favourited);
+        holder.getFavourite().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getFavourite().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cFav;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cFav = cStatus.favourited;
+                        cStatus.favourited = !cFav;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cFav) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .favouriteStatus(cStatus.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unfavouriteStatus(cStatus.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                cStatus.favourited = respStatus.favourited;
+                                if (respStatus.favourited) {
+                                    cStatus.favouritesCount = respStatus.favouritesCount;
+                                } else {
+                                    int count = Integer.parseInt(respStatus.favouritesCount);
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    cStatus.favouritesCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getFavourite().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        cStatus.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        cStatus.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
 
         float radius = 16;
         float borderWidth = 1;
         int borderColor = Color.LTGRAY;
         String avtUrl1 = status.account.avatar;
 
-        if (status.getActionableStatus() == status) {
+        if (actionableStatus == status) {
             View view = LayoutInflater.from(mView.getContext()).inflate(R.layout.status_item_avatar_layout1, null, false);
             RoundedImageView roundImage1 = view.findViewById(R.id.avt1);
             roundImage1.setCornerRadius(radius);
@@ -298,7 +313,7 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
             roundImage1.setBorderWidth(borderWidth);
             roundImage2.setBorderWidth(borderWidth);
 
-            String avtUrl2 = status.getActionableStatus().account.avatar;
+            String avtUrl2 = actionableStatus.account.avatar;
             Picasso.get()
                     .load(avtUrl1)
                     .into(roundImage1);
@@ -319,51 +334,49 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
 //        Pt.d("length:" + status.getActionableStatus().attachments.length);
 //        Pt.d("add media postion:" + position);
 
-        Status actionableStatus = status.getActionableStatus();
 
-        if (actionableStatus != null) {
 //            for (int i = 0; i < actionableStatus.attachments.length; i++) {
 //                Pt.d("previewUrl:" + actionableStatus.attachments[i].previewUrl);
 //                Pt.d("url:" + actionableStatus.attachments[i].url);
 //            }
 
-            for (int i = 0; i < actionableStatus.attachments.length; i++) {
-                final Status.MediaAttachment media = actionableStatus.attachments[i];
-                if (media.type == Status.MediaAttachment.Type.IMAGE) {
-                    final ImageView imageView = new ImageView(mView.getContext());
-                    final Drawable drawable = new IconicsDrawable(mView.getContext())
-                            .icon(FontAwesome.Icon.faw_file_image_o)
-                            .color(Color.LTGRAY)
-                            .sizeDp(48);
-                    imageView.setImageDrawable(drawable);
-                    ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                    );
-                    imageView.setLayoutParams(params);
-                    Picasso.get()
-                            .load(media.previewUrl)
-                            .into(imageView);
-                    holder.addMedias(imageView);
+        for (int i = 0; i < cStatus.attachments.length; i++) {
+            final Status.MediaAttachment media = cStatus.attachments[i];
+            if (media.type == Status.MediaAttachment.Type.IMAGE) {
+                final ImageView imageView = new ImageView(mView.getContext());
+                final Drawable drawable = new IconicsDrawable(mView.getContext())
+                        .icon(FontAwesome.Icon.faw_file_image_o)
+                        .color(Color.LTGRAY)
+                        .sizeDp(48);
+                imageView.setImageDrawable(drawable);
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                imageView.setLayoutParams(params);
+                Picasso.get()
+                        .load(media.previewUrl)
+                        .into(imageView);
+                holder.addMedias(imageView);
 
-                    imageView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            FragmentManager manager = mFragment.getBaseActivity().getSupportFragmentManager();
-                            DialogModalImage dialog = new DialogModalImage();
-                            dialog
-                                    .setUrl(media.url)
-                                    .setModal(true)
-                                    .setMax(true)
-                                    .setDimAmount(.7f)
-                                    .setCleanBackground(true)
-                                    .setLayout(R.layout.dialog_image);
-                            dialog.show(manager, null);
-                        }
-                    });
-                }
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        FragmentManager manager = mFragment.getBaseActivity().getSupportFragmentManager();
+                        DialogModalImage dialog = new DialogModalImage();
+                        dialog
+                                .setUrl(media.url)
+                                .setModal(true)
+                                .setMax(true)
+                                .setDimAmount(.7f)
+                                .setCleanBackground(true)
+                                .setLayout(R.layout.dialog_image);
+                        dialog.show(manager, null);
+                    }
+                });
             }
         }
+
     }
 
     @Override
@@ -423,9 +436,9 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                     .color(mFragment.getResources().getColor(R.color.status_button_dark))
                     .sizeDp(22);
 
-            mLayoutReplies = itemView.findViewById(R.id.status_replies).findViewById(R.id.status_group_layout);
-            mLayoutReblogs = itemView.findViewById(R.id.status_reblogs).findViewById(R.id.status_group_layout);
-            mLayoutFavourites = itemView.findViewById(R.id.status_favourites).findViewById(R.id.status_group_layout);
+            mLayoutReplies = itemView.findViewById(R.id.status_replies_layout).findViewById(R.id.status_group_layout);
+            mLayoutReblogs = itemView.findViewById(R.id.status_reblogs_layout).findViewById(R.id.status_group_layout);
+            mLayoutFavourites = itemView.findViewById(R.id.status_favourites_layout).findViewById(R.id.status_group_layout);
 
             mImageMore = itemView.findViewById(R.id.status_more);
             mDate = itemView.findViewById(R.id.status_date);

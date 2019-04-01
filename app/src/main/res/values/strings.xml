@@ -164,5 +164,6 @@
     <string name="strong_mention"><![CDATA[<strong>回复了你</strong>]]></string>
 
     <string name="network_request_timeout">网络请求超时</string>
+    <string name="network_server_timeout">连接服务器超时</string>
 
 </resources>

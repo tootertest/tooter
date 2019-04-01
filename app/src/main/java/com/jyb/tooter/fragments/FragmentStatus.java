@@ -110,6 +110,7 @@ public class FragmentStatus extends Fragment {
         super.onStart();
         if (mData.size() == 0) {
             mRefresh.autoRefresh();
+            Pt.d("autoRefresh");
         }
     }
 
@@ -313,7 +314,7 @@ public class FragmentStatus extends Fragment {
 
         };
 
-        JobManager.instance()
+        JobManager.get()
                 .add(job);
     }
 
@@ -346,7 +347,7 @@ public class FragmentStatus extends Fragment {
 
                     int pos = 0;
 
-                    if (mData.isEmpty()){
+                    if (mData.isEmpty()) {
                         if (list.size() > mMaxDisplayCount) {
 
                             for (int i = 0; i < mMaxDisplayCount; i++) {
@@ -356,7 +357,7 @@ public class FragmentStatus extends Fragment {
                         } else {
                             mData.addAll(list);
                         }
-                    }else {
+                    } else {
 
                         Status reff = mData.get(0);
                         Status refl = mData.get(mData.size() - 1);
@@ -389,7 +390,7 @@ public class FragmentStatus extends Fragment {
                     Pt.d("pos:" + pos);
                     Pt.d(mCallType + " onResponse");
                 } else {
-                    Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
+                    Toast.makeText(mBaseActivity, getString(R.string.network_request_timeout)
                             , Toast.LENGTH_SHORT).show();
                     Pt.d(mCallType + " unResponse");
                 }
@@ -399,7 +400,7 @@ public class FragmentStatus extends Fragment {
             @Override
             public void onTimeout() {
                 super.onTimeout();
-                Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
+                Toast.makeText(mBaseActivity, getString(R.string.network_request_timeout)
                         , Toast.LENGTH_SHORT).show();
                 Pt.d(mCallType + " onTimeout");
                 mRefresh.finishLoadMore(false);
@@ -407,7 +408,7 @@ public class FragmentStatus extends Fragment {
 
         };
 
-        JobManager.instance()
+        JobManager.get()
                 .add(job);
 
     }

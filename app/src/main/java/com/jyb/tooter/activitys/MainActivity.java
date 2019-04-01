@@ -15,13 +15,22 @@ import android.support.v4.view.ViewPager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.jyb.tooter.R;
 import com.jyb.tooter.adapter.PagerFragmentAdapter;
+import com.jyb.tooter.dialog.DialogModal;
+import com.jyb.tooter.entity.Account;
 import com.jyb.tooter.fragments.FragmentNotfications;
 import com.jyb.tooter.fragments.FragmentStatus;
-import com.jyb.tooter.store.User;
+import com.jyb.tooter.fragments.FragmentPager;
+import com.jyb.tooter.job.Job;
+import com.jyb.tooter.job.maneger.JobManager;
+import com.jyb.tooter.model.Toot;
+import com.jyb.tooter.model.User;
+import com.jyb.tooter.statics.SharedVar;
+import com.jyb.tooter.utils.Pt;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -40,6 +49,8 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import retrofit2.Response;
+
 public class MainActivity extends BaseActivity {
 
     private static final String TAG = "DEBUG_MainActivity";
@@ -55,12 +66,15 @@ public class MainActivity extends BaseActivity {
     public ImageButton getDrawer() {
         return mBtnDrawer;
     }
+
     public TabLayout getTabs() {
         return mTabs;
     }
+
     public FloatingActionButton getFloating() {
         return mFloating;
     }
+
     public ViewPager getPager() {
         return mPager;
     }
@@ -81,6 +95,7 @@ public class MainActivity extends BaseActivity {
         initPager();
         initDrawer();
         initFloating();
+        ready();
     }
 
     @Override
@@ -90,6 +105,71 @@ public class MainActivity extends BaseActivity {
         } else {
             return super.dispatchKeyEvent(event);
         }
+    }
+
+    private void ready() {
+
+        Pt.d("ready");
+
+        final Activity activity = this;
+
+        FragmentManager manager = getSupportFragmentManager();
+        final DialogModal dialogModal = new DialogModal();
+        dialogModal.setLayout(R.layout.dialog_layout_load)
+//                .setDimAmount(1)
+                .show(manager, null);
+
+        Job job = new Job() {
+
+            Response<Account> sResponse;
+
+            @Override
+            public void onStart() {
+                super.onStart();
+                Pt.d("onStart get ACCOUNT");
+            }
+
+            @Override
+            public void onSend() {
+                super.onSend();
+                Pt.d("onSend get ACCOUNT");
+                try {
+                    sResponse = getMastApi()
+                            .accountVerifyCredentials()
+                            .execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onReceive() {
+                super.onReceive();
+                if (sResponse != null && sResponse.isSuccessful()) {
+                    SharedVar.ACCOUNT = sResponse.body();
+                    dialogModal.dismiss();
+                    Pt.d("onReceive get ACCOUNT succuse");
+                } else {
+                    Pt.d("onReceive get ACCOUNT fail");
+                    Toast.makeText(activity, getString(R.string.network_request_timeout)
+                            , Toast.LENGTH_SHORT).show();
+                    JobManager.get()
+                            .add(this.reset());
+                }
+            }
+
+            @Override
+            public void onTimeout() {
+                super.onTimeout();
+                Pt.d("onTimeout get ACCOUNT");
+                Toast.makeText(activity, getString(R.string.network_request_timeout)
+                        , Toast.LENGTH_SHORT).show();
+                JobManager.get()
+                        .add(this.reset());
+            }
+        };
+        JobManager.get()
+                .add(job);
     }
 
     private void initTabs() {
@@ -290,6 +370,9 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(activity, TootActivity.class);
+                Toot toot = new Toot();
+                String gson = new Gson().toJson(toot);
+                intent.putExtra("toot", gson);
                 startActivity(intent);
             }
         });

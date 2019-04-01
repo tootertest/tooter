@@ -1,5 +1,6 @@
 package com.jyb.tooter.adapter;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
@@ -9,22 +10,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
 import com.jyb.tooter.R;
+import com.jyb.tooter.activitys.TootActivity;
 import com.jyb.tooter.entity.Account;
 import com.jyb.tooter.entity.Notification;
 import com.jyb.tooter.entity.Status;
 import com.jyb.tooter.fragments.FragmentNotfications;
+import com.jyb.tooter.job.Job;
+import com.jyb.tooter.job.maneger.JobManager;
+import com.jyb.tooter.model.Toot;
 import com.jyb.tooter.utils.HtmlUtils;
+import com.jyb.tooter.utils.Pt;
 import com.jyb.tooter.view.StatusHolder;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
 import io.reactivex.annotations.NonNull;
+import retrofit2.Response;
 
 public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder> {
 
@@ -49,27 +58,27 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
     public void onBindViewHolder(@Nullable final StatusHolder holder, final int position) {
         Notification notification = mData.get(position);
 
-        holder.clean();
+        holder.clear();
 
         switch (notification.type) {
             case FOLLOW:
-                follow(holder, notification);
+                follow(holder, position, notification);
                 break;
             case REBLOG:
-                reblog(holder, notification);
+                reblog(holder, position, notification);
                 break;
             case FAVOURITE:
-                favourite(holder, notification);
+                favourite(holder, position, notification);
                 break;
             case MENTION:
-                mention(holder, notification);
+                mention(holder, position, notification);
                 break;
         }
     }
 
-    private void follow(StatusHolder holder, Notification notification) {
+    private void follow(StatusHolder holder, int position, final Notification notification) {
 
-        holder.setControllerGroupGONE(true,false,false,true);
+        holder.setControllerGroupVisible(true, false, false, true);
 
         Account account = notification.account;
         String username = account.acct;
@@ -103,13 +112,27 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                 .color(mFragment.getResources().getColor(R.color.status_reblog_button_marked_dark))
                 .sizeDp(22);
         holder.setStatusType(userPlus);
+
+        holder.getReplie()
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toot toot = new Toot();
+                        toot.getMentions()
+                                .add("@" + notification.account.acct);
+                        String gson = new Gson().toJson(toot);
+                        Intent intent = new Intent(mFragment.getBaseActivity(), TootActivity.class);
+                        intent.putExtra("toot", gson);
+                        mFragment.startActivity(intent);
+                    }
+                });
     }
 
-    private void reblog(StatusHolder holder, Notification notification) {
+    private void reblog(final StatusHolder holder, final int position, final Notification notification) {
 
-        holder.setControllerGroupGONE(true,false,false,true);
+//        holder.setControllerGroupVisible(true, false, false, true);
 
-        Status status = notification.status;
+        final Status actionableStatus = notification.status.getActionableStatus();
         String username = notification.account.acct;
         String displayName = notification.account.displayName;
         String name = displayName.equals("") ? username : displayName;
@@ -121,11 +144,11 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
 
         holder.setDate(notification.createdAt);
 
-        holder.setRRFCount(status.reblogsCount,
-                status.reblogsCount,
-                status.favouritesCount);
+        holder.setRRFCount(actionableStatus.reblogsCount,
+                actionableStatus.reblogsCount,
+                actionableStatus.favouritesCount);
 
-        Spanned spdContent = HtmlUtils.fromHtml(status.content);
+        Spanned spdContent = HtmlUtils.fromHtml(actionableStatus.content);
         holder.setContent(spdContent);
 
         View view = LayoutInflater.from(mView.getContext()).inflate(R.layout.status_item_avatar_layout2, null, false);
@@ -141,7 +164,7 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         roundImage1.setBorderWidth(1f);
         roundImage2.setBorderWidth(1f);
 
-        String avtUrl2 = status.account.avatar;
+        String avtUrl2 = actionableStatus.account.avatar;
         Picasso.get()
                 .load(avtUrl1)
                 .into(roundImage1);
@@ -155,13 +178,198 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                 .color(mFragment.getResources().getColor(R.color.status_reblog_button_marked_dark))
                 .sizeDp(22);
         holder.setStatusType(retweet);
+
+        holder.getReplie()
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toot toot = new Toot();
+                        toot.replyId = notification.status.id;
+                        toot.getMentions()
+                                .add("@" + notification.account.acct);
+                        String gson = new Gson().toJson(toot);
+                        Intent intent = new Intent(mFragment.getBaseActivity(), TootActivity.class);
+                        intent.putExtra("toot", gson);
+                        mFragment.startActivity(intent);
+                    }
+                });
+
+        holder.setReblogSelecte(actionableStatus.reblogged);
+        holder.getReblog().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getReblog().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cReb;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cReb = actionableStatus.reblogged;
+                        actionableStatus.reblogged = !cReb;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cReb) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .reblogStatus(actionableStatus.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unreblogStatus(actionableStatus.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                actionableStatus.reblogged = respStatus.reblogged;
+                                int count = Integer.parseInt(respStatus.reblogsCount);
+                                if (respStatus.reblogged) {
+                                    actionableStatus.reblogsCount = count + 1 + "";
+                                } else {
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    actionableStatus.reblogsCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getReblog().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        actionableStatus.reblogged = cReb;
+                        notifyItemChanged(position);
+                        holder.getReblog().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        actionableStatus.reblogged = cReb;
+                        notifyItemChanged(position);
+                        holder.getReblog().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
+
+        holder.setFavouriteSelete(actionableStatus.favourited);
+        holder.getFavourite().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getFavourite().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cFav;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cFav = actionableStatus.favourited;
+                        actionableStatus.favourited = !cFav;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cFav) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .favouriteStatus(actionableStatus.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unfavouriteStatus(actionableStatus.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                actionableStatus.favourited = respStatus.favourited;
+                                if (respStatus.favourited) {
+                                    actionableStatus.favouritesCount = respStatus.favouritesCount;
+                                } else {
+                                    int count = Integer.parseInt(respStatus.favouritesCount);
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    actionableStatus.favouritesCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getFavourite().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        actionableStatus.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        actionableStatus.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
     }
 
-    private void favourite(StatusHolder holder, Notification notification) {
+    private void favourite(final StatusHolder holder, final int position, final Notification notification) {
 
-        holder.setControllerGroupGONE(true,false,false,true);
+//        holder.setControllerGroupVisible(true, false, false, true);
 
-        Status status = notification.status;
+        final Status status = notification.status;
         String username = notification.account.acct;
         String displayName = notification.account.displayName;
         String name = displayName.equals("") ? username : displayName;
@@ -173,7 +381,7 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
 
         holder.setDate(notification.createdAt);
 
-        holder.setRRFCount(status.reblogsCount,
+        holder.setRRFCount(status.repliesCount,
                 status.reblogsCount,
                 status.favouritesCount);
 
@@ -207,9 +415,194 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                 .color(mFragment.getResources().getColor(R.color.status_favourite_button_marked_dark))
                 .sizeDp(22);
         holder.setStatusType(retweet);
+
+        holder.getReplie()
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toot toot = new Toot();
+                        toot.replyId = status.id;
+                        toot.getMentions()
+                                .add("@" + notification.account.acct);
+                        String gson = new Gson().toJson(toot);
+                        Intent intent = new Intent(mFragment.getBaseActivity(), TootActivity.class);
+                        intent.putExtra("toot", gson);
+                        mFragment.startActivity(intent);
+                    }
+                });
+
+        holder.setReblogSelecte(status.reblogged);
+        holder.getReblog().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getReblog().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cReb;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cReb = status.reblogged;
+                        status.reblogged = !cReb;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cReb) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .reblogStatus(status.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unreblogStatus(status.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                status.reblogged = respStatus.reblogged;
+                                int count = Integer.parseInt(respStatus.reblogsCount);
+                                if (respStatus.reblogged) {
+                                    status.reblogsCount = count + 1 + "";
+                                } else {
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    status.reblogsCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getReblog().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        status.reblogged = cReb;
+                        notifyItemChanged(position);
+                        holder.getReblog().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        status.reblogged = cReb;
+                        notifyItemChanged(position);
+                        holder.getReblog().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
+
+        holder.setFavouriteSelete(status.favourited);
+        holder.getFavourite().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getFavourite().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cFav;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cFav = status.favourited;
+                        status.favourited = !cFav;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cFav) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .favouriteStatus(status.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unfavouriteStatus(status.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                status.favourited = respStatus.favourited;
+                                if (respStatus.favourited) {
+                                    status.favouritesCount = respStatus.favouritesCount;
+                                } else {
+                                    int count = Integer.parseInt(respStatus.favouritesCount);
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    status.favouritesCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getFavourite().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        status.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        status.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
     }
 
-    private void mention(StatusHolder holder, Notification notification) {
+    private void mention(final StatusHolder holder, final int position, final Notification notification) {
 
         final Status status = notification.status;
 
@@ -276,6 +669,191 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                     .sizeDp(22);
             holder.setStatusType(drawable);
         }
+
+        holder.getReplie()
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toot toot = new Toot();
+                        toot.replyId = status.id;
+                        toot.getMentions()
+                                .add("@" + notification.account.acct);
+                        String gson = new Gson().toJson(toot);
+                        Intent intent = new Intent(mFragment.getBaseActivity(), TootActivity.class);
+                        intent.putExtra("toot", gson);
+                        mFragment.startActivity(intent);
+                    }
+                });
+
+        holder.setReblogSelecte(status.reblogged);
+        holder.getReblog().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getReblog().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cReb;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cReb = status.reblogged;
+                        status.reblogged = !cReb;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cReb) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .reblogStatus(status.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unreblogStatus(status.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                status.reblogged = respStatus.reblogged;
+                                int count = Integer.parseInt(respStatus.reblogsCount);
+                                if (respStatus.reblogged) {
+                                    status.reblogsCount = count + 1 + "";
+                                } else {
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    status.reblogsCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getReblog().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        status.reblogged = cReb;
+                        notifyItemChanged(position);
+                        holder.getReblog().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        status.reblogged = cReb;
+                        notifyItemChanged(position);
+                        holder.getReblog().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
+
+        holder.setFavouriteSelete(status.favourited);
+        holder.getFavourite().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                holder.getFavourite().setEnabled(false);
+
+                Job job = new Job() {
+
+                    boolean cFav;
+
+                    Response<Status> response;
+
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                        cFav = status.favourited;
+                        status.favourited = !cFav;
+                        notifyItemChanged(position);
+                        Pt.d("onStart");
+                    }
+
+                    @Override
+                    public void onSend() {
+                        super.onSend();
+                        try {
+                            if (!cFav) {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .favouriteStatus(status.id)
+                                        .execute();
+                            } else {
+                                response = mFragment.getBaseActivity()
+                                        .getMastApi()
+                                        .unfavouriteStatus(status.id)
+                                        .execute();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Pt.d("onSend");
+                    }
+
+                    @Override
+                    public void onReceive() {
+                        super.onReceive();
+                        if (response != null && response.isSuccessful()) {
+                            Status respStatus = response.body();
+                            if (respStatus != null) {
+                                status.favourited = respStatus.favourited;
+                                if (respStatus.favourited) {
+                                    status.favouritesCount = respStatus.favouritesCount;
+                                } else {
+                                    int count = Integer.parseInt(respStatus.favouritesCount);
+                                    count -= 1;
+                                    if (count < 0) count = 0;
+                                    status.favouritesCount = count + "";
+                                }
+                                notifyItemChanged(position);
+                                holder.getFavourite().setEnabled(true);
+                                Pt.d("onReceive");
+                                return;
+                            }
+                        }
+                        status.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onReceive Error");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        status.favourited = cFav;
+                        notifyItemChanged(position);
+                        holder.getFavourite().setEnabled(true);
+                        Pt.d("onTimeout");
+                    }
+                };
+                JobManager.get()
+                        .addAnsyc(job);
+            }
+        });
 
     }
 

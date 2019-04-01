@@ -15,14 +15,14 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/dialog_modal_emoji_up"
+                android:id="@+id/dialog_modal_emoji_last"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="@android:color/transparent" />
 
             <ImageButton
-                android:id="@+id/dialog_modal_emoji_down"
+                android:id="@+id/dialog_modal_emoji_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
@@ -38,7 +38,7 @@
         </LinearLayout>
 
         <TableLayout
-            android:id="@+id/dialog_modal_emoji_layout"
+            android:id="@+id/dialog_modal_layout_emoji"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

@@ -2,7 +2,6 @@ package com.jyb.tooter.activitys;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,20 +9,12 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 
-import com.google.gson.Gson;
 import com.jyb.tooter.R;
 import com.jyb.tooter.statics.SharedVar;
-import com.jyb.tooter.store.User;
 import com.jyb.tooter.utils.Pt;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
 import io.reactivex.functions.Consumer;
 

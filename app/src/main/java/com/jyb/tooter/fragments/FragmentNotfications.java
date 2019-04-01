@@ -17,7 +17,6 @@ import com.jyb.tooter.R;
 import com.jyb.tooter.activitys.BaseActivity;
 import com.jyb.tooter.adapter.RecycleNotficationAdapter;
 import com.jyb.tooter.entity.Notification;
-import com.jyb.tooter.entity.Status;
 import com.jyb.tooter.job.Job;
 import com.jyb.tooter.job.maneger.JobManager;
 import com.jyb.tooter.utils.Pt;
@@ -280,7 +279,7 @@ public class FragmentNotfications extends Fragment {
 
         };
 
-        JobManager.instance()
+        JobManager.get()
                 .add(job);
     }
 
@@ -373,7 +372,8 @@ public class FragmentNotfications extends Fragment {
 
         };
 
-        JobManager.instance()
+        JobManager.get()
                 .add(job);
     }
+
 }

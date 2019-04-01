@@ -28,7 +28,7 @@ import com.jyb.tooter.job.Job;
 import com.jyb.tooter.job.maneger.JobManager;
 import com.jyb.tooter.nerwork.MastodonAPI;
 import com.jyb.tooter.statics.SharedVar;
-import com.jyb.tooter.store.User;
+import com.jyb.tooter.model.User;
 import com.jyb.tooter.utils.Pt;
 
 import java.io.FileNotFoundException;
@@ -109,10 +109,7 @@ public class LoginActivity extends AppCompatActivity {
 //                .apply();
         mManager = getSupportFragmentManager();
         mLoadDialog = new DialogModal();
-        mLoadDialog.setLayout(R.layout.dialog_layout_load)
-                .setDimAmount(.3f)
-                .setModal(true)
-                .setCleanBackground(true);
+        mLoadDialog.setLayout(R.layout.dialog_layout_load);
 
         mActivity = this;
     }
@@ -233,7 +230,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
-        JobManager.instance()
+        JobManager.get()
                 .add(job);
     }
 
@@ -334,7 +331,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 };
 
-                JobManager.instance()
+                JobManager.get()
                         .add(job);
             }
         }

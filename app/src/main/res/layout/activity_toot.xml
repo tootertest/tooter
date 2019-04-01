@@ -12,28 +12,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/toot_acct"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:enabled="false"
-                android:text="Name" />
-
-            <!--<Button-->
-                <!--android:id="@+id/button"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_weight="1"-->
-                <!--android:text="+" />-->
-        </LinearLayout>
+            android:orientation="horizontal"/>
 
         <EditText
-            android:id="@+id/toot_input_edit"
+            android:id="@+id/toot_edit_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -48,24 +30,28 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/toot_insert_emoji"
+                android:id="@+id/toot_btn_emoji"
                 android:layout_margin="8dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <ImageButton
-                android:id="@+id/toot_insert_media"
+                android:id="@+id/toot_btn_media"
                 android:layout_margin="8dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"/>
+                android:layout_height="wrap_content" />
 
             <ImageButton
-                android:id="@+id/toot_insert_image"
+                android:id="@+id/toot_btn_image"
                 android:layout_margin="8dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"/>
+                android:layout_height="wrap_content" />
+
+            <ImageButton
+                android:id="@+id/toot_btn_privacy"
+                android:layout_margin="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 

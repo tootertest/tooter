@@ -79,9 +79,9 @@ public class StatusHolder extends RecyclerView.ViewHolder {
                 .color(mFragment.getResources().getColor(R.color.status_button_dark))
                 .sizeDp(mDrawableSize);
 
-        mLayoutReplies = itemView.findViewById(R.id.status_replies).findViewById(R.id.status_group_layout);
-        mLayoutReblogs = itemView.findViewById(R.id.status_reblogs).findViewById(R.id.status_group_layout);
-        mLayoutFavourites = itemView.findViewById(R.id.status_favourites).findViewById(R.id.status_group_layout);
+        mLayoutReplies = itemView.findViewById(R.id.status_replies_layout).findViewById(R.id.status_group_layout);
+        mLayoutReblogs = itemView.findViewById(R.id.status_reblogs_layout).findViewById(R.id.status_group_layout);
+        mLayoutFavourites = itemView.findViewById(R.id.status_favourites_layout).findViewById(R.id.status_group_layout);
 
         mImageMore = itemView.findViewById(R.id.status_more);
         mDate = itemView.findViewById(R.id.status_date);
@@ -152,7 +152,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         mFavouritesCount.setText(count3);
     }
 
-    public void setControllerGroupGONE(boolean flag) {
+    public void setControllerGroupVisible(boolean flag) {
         if (flag) {
             mLayoutReplies.setVisibility(View.VISIBLE);
             mLayoutReblogs.setVisibility(View.VISIBLE);
@@ -166,24 +166,24 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setControllerGroupGONE(boolean flagReplies,
-                                       boolean flagReblogs,
-                                       boolean flagFavourites,
-                                       boolean flagMore) {
+    public void setControllerGroupVisible(boolean flagReplies,
+                                          boolean flagReblogs,
+                                          boolean flagFavourites,
+                                          boolean flagMore) {
         if (flagReplies) {
             mLayoutReplies.setVisibility(View.VISIBLE);
         } else {
-            mLayoutReplies.setVisibility(View.GONE);
+            mLayoutReplies.setVisibility(View.INVISIBLE);
         }
         if (flagReblogs) {
             mLayoutReblogs.setVisibility(View.VISIBLE);
         } else {
-            mLayoutReblogs.setVisibility(View.GONE);
+            mLayoutReblogs.setVisibility(View.INVISIBLE);
         }
         if (flagFavourites) {
             mLayoutFavourites.setVisibility(View.VISIBLE);
         } else {
-            mLayoutFavourites.setVisibility(View.GONE);
+            mLayoutFavourites.setVisibility(View.INVISIBLE);
         }
         if (flagMore) {
             mImageMore.setVisibility(View.VISIBLE);
@@ -211,18 +211,18 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         mMediaLayout.addView(view);
     }
 
-    public void clean() {
+    public void clear() {
 
-        setControllerGroupGONE(true);
+        setControllerGroupVisible(true);
 
         mImageReplies.setBackground(mDrawableReplies);
         mImageReblogs.setBackground(mDrawableReblogs);
         mImageFavourites.setBackground(mDrawableFavourites);
         mImageMore.setBackground(mDrawableMore);
 
-        mImageFavourites.setOnClickListener(null);
-        mImageReblogs.setOnClickListener(null);
-        mImageFavourites.setOnClickListener(null);
+        mLayoutReplies.setOnClickListener(null);
+        mLayoutReblogs.setOnClickListener(null);
+        mLayoutFavourites.setOnClickListener(null);
         mImageMore.setOnClickListener(null);
 
         mMediaLayout.removeAllViews();

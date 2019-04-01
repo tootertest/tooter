@@ -10,7 +10,7 @@ public class JobManager {
 
     private static JobManager mInstance = new JobManager();
 
-    public static JobManager instance() {
+    public static JobManager get() {
         return mInstance;
     }
 

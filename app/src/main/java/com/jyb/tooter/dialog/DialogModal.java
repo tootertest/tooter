@@ -29,7 +29,7 @@ public class DialogModal extends DialogFragment {
     protected boolean mMax;
 
     public DialogModal() {
-        mModal = false;
+        mModal = true;
         mLayout = 0;
         mDimAmount = 0.3f;
         mCleanBackground = true;

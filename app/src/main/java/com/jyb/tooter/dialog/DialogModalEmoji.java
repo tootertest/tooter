@@ -1,45 +1,32 @@
 package com.jyb.tooter.dialog;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
 import com.jyb.tooter.R;
-import com.jyb.tooter.activitys.BaseActivity;
 import com.jyb.tooter.activitys.TootActivity;
 import com.jyb.tooter.utils.EmojiStyle;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.iconics.IconicsDrawable;
 
-import io.reactivex.annotations.NonNull;
-import android.support.annotation.Nullable;
-
 @SuppressLint("ValidFragment")
-public class DialogModalEmoji extends DialogFragment {
+public class DialogModalEmoji extends DialogModal {
 
-    ImageButton mBtnUp;
+    ImageButton mBtnLast;
 
-    ImageButton mBtnDown;
+    ImageButton mBtnNext;
 
     ImageButton mBtnClose;
 
-    TableLayout mLayout;
+    TableLayout mLayoutEmoji;
 
     private TootActivity mActivity;
-    private View mView;
     private int mPage;
 
     private int mDisplayRow;
@@ -48,47 +35,24 @@ public class DialogModalEmoji extends DialogFragment {
     public DialogModalEmoji(TootActivity activity) {
         super();
         mActivity = activity;
-        mDisplayRow = 4 - 1;
-        mDisplayColumn = 10 - 1;
+        mDisplayRow = 4;
+        mDisplayColumn = 8;
         mPage = 0;
     }
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.dialog_modal_emoji, container, false);
-        bindView();
-        initView();
-        initEvent();
-        return mView;
-    }
-
-    private void bindView() {
-        mBtnUp = mView.findViewById(R.id.dialog_modal_emoji_up);
-        mBtnDown = mView.findViewById(R.id.dialog_modal_emoji_down);
+    protected void onBindView() {
+        super.onBindView();
+        mBtnLast = mView.findViewById(R.id.dialog_modal_emoji_last);
+        mBtnNext = mView.findViewById(R.id.dialog_modal_emoji_next);
         mBtnClose = mView.findViewById(R.id.dialog_modal_emoji_close);
-        mLayout = mView.findViewById(R.id.dialog_modal_emoji_layout);
+        mLayoutEmoji = mView.findViewById(R.id.dialog_modal_layout_emoji);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        Window window = getDialog().getWindow();
-        WindowManager.LayoutParams windowParams = window.getAttributes();
-        windowParams.dimAmount = 0f;
-        window.setAttributes(windowParams);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getDialog().getWindow().setLayout(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-    }
-
-    private void initView() {
-
-//        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        Drawable drawableUp = new IconicsDrawable(mActivity)
+    protected void onInitView() {
+        super.onInitView();
+        Drawable drawableUp = new IconicsDrawable(getActivity())
                 .icon(FontAwesome.Icon.faw_arrow_left)
                 .color(Color.BLACK)
                 .sizeDp(16);
@@ -103,34 +67,35 @@ public class DialogModalEmoji extends DialogFragment {
                 .color(Color.BLACK)
                 .sizeDp(16);
 
-        mBtnUp.setImageDrawable(drawableUp);
-        mBtnDown.setImageDrawable(drawableDown);
+        mBtnLast.setImageDrawable(drawableUp);
+        mBtnNext.setImageDrawable(drawableDown);
         mBtnClose.setImageDrawable(drawableClose);
 
         displayEmoji(mPage);
     }
 
-    private void initEvent() {
-
+    @Override
+    protected void onInitEvent() {
+        super.onInitEvent();
         getDialog().setCancelable(false);
         getDialog().setCanceledOnTouchOutside(false);
 
-        mBtnUp.setOnClickListener(new View.OnClickListener() {
+        mBtnLast.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mPage > 0) {
-                    mLayout.removeAllViews();
+                    mLayoutEmoji.removeAllViews();
                     mPage -= 1;
                     displayEmoji(mPage);
                 }
             }
         });
 
-        mBtnDown.setOnClickListener(new View.OnClickListener() {
+        mBtnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mPage < 2) {
-                    mLayout.removeAllViews();
+                    mLayoutEmoji.removeAllViews();
                     mPage += 1;
                     displayEmoji(mPage);
                 }
@@ -143,7 +108,6 @@ public class DialogModalEmoji extends DialogFragment {
                 getDialog().dismiss();
             }
         });
-
     }
 
     private void displayEmoji(int page) {
@@ -154,7 +118,7 @@ public class DialogModalEmoji extends DialogFragment {
             TableRow.LayoutParams params = new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT);
             params.weight = 1;
             for (int j = 0; j < mDisplayColumn; j++) {
-                int index = (page * 4 + i) * 8 + j;
+                int index = (page * mDisplayRow + i) * mDisplayColumn + j;
                 final String emoji;
                 if (index < emojiStyle.getLength(style)) {
                     emoji = emojiStyle.getEmojo(style, index);
@@ -176,7 +140,7 @@ public class DialogModalEmoji extends DialogFragment {
                 });
                 row.addView(btn);
             }
-            mLayout.addView(row);
+            mLayoutEmoji.addView(row);
         }
     }
 }
