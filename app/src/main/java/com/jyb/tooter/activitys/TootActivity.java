@@ -40,6 +40,7 @@ public class TootActivity extends BaseActivity {
 
     Button mBtnSend;
 
+
     ImageButton mBtnPrivacy;
     ImageButton mBtnEmoji;
     ImageButton mBtnMedia;
