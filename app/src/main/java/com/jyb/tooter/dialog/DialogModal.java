@@ -14,9 +14,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
-
-import com.jyb.tooter.utils.Pt;
 
 public class DialogModal extends DialogFragment {
 
@@ -112,6 +109,5 @@ public class DialogModal extends DialogFragment {
                 }
             });
         }
-
     }
 }

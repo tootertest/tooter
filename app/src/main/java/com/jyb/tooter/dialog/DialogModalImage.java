@@ -1,6 +1,7 @@
 package com.jyb.tooter.dialog;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +36,7 @@ import okhttp3.Response;
 public class DialogModalImage extends DialogModal {
 
     TouchImageView mTouchImageView;
-    ImageButton mImageClose;
+//    ImageButton mImageClose;
     TextView mLoadProgress;
     Bitmap mBitmap;
     String mUrl;
@@ -79,7 +81,7 @@ public class DialogModalImage extends DialogModal {
     protected void onBindView() {
         super.onBindView();
         mTouchImageView = mView.findViewById(R.id.touch_image_view);
-        mImageClose = mView.findViewById(R.id.touch_image_close);
+//        mImageClose = mView.findViewById(R.id.touch_image_close);
         mLoadProgress = mView.findViewById(R.id.touch_image_loadprogress);
     }
 
@@ -87,13 +89,13 @@ public class DialogModalImage extends DialogModal {
     protected void onInitView() {
         super.onInitView();
 
-        IconicsDrawable iconClose = new IconicsDrawable(this.getContext())
-                .icon(FontAwesome.Icon.faw_window_close)
-                .color(Color.LTGRAY)
-                .sizeDp(40);
+//        IconicsDrawable iconClose = new IconicsDrawable(this.getContext())
+//                .icon(FontAwesome.Icon.faw_window_close)
+//                .color(Color.LTGRAY)
+//                .sizeDp(40);
 
-        mImageClose.setImageDrawable(iconClose);
-        mImageClose.setBackground(null);
+//        mImageClose.setImageDrawable(iconClose);
+//        mImageClose.setBackground(null);
 
         Bitmap.Config config = Bitmap.Config.ARGB_8888;
         Bitmap bitmap  = Bitmap.createBitmap(2,2,config);
@@ -109,11 +111,12 @@ public class DialogModalImage extends DialogModal {
     @Override
     protected void onInitEvent() {
         super.onInitEvent();
-        mImageClose.setOnClickListener(new View.OnClickListener() {
+        getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 mIsDownload.set(false);
                 dismiss();
+                return keyCode == KeyEvent.KEYCODE_BACK;
             }
         });
     }
@@ -149,12 +152,11 @@ public class DialogModalImage extends DialogModal {
                         readSize = inputStream.read(data, (int) offset, (int) loadSize);
                     }
                     if (readSize <= 0) {
-                        Pt.d("readSize: " + readSize);
+//                        Pt.d("readSize: " + readSize);
                         break;
                     }
                     offset += readSize;
                     float loadProgress = (float) offset / fileSize;
-                    Pt.d("loaded: " + loadProgress);
                     Message message = new Message();
                     String str = String.valueOf(loadProgress * 100);
                     String strList[] = str.split("\\.");
@@ -162,18 +164,17 @@ public class DialogModalImage extends DialogModal {
                     message.obj = newstr+"%";
                     message.what = 1;
                     mHandler.sendMessage(message);
-//                    break;
+                    Pt.d("loaded: " + newstr);
                 }
                 if (mIsDownload.get()){
                     Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, (int) fileSize);
-//
-                    Pt.d(bitmap.getWidth() + "");
                     mBitmap = bitmap;
                     mHandler.sendEmptyMessage(0);
                 }else {
                     if (!call.isCanceled()) {
                         call.cancel();
                     }
+                    Pt.d("stop download");
                 }
             }
         });

@@ -54,7 +54,6 @@ public class FragmentNotfications extends Fragment {
 
     private final int mMaxDisplayCount;
     private final int mMaxResponseCount;
-    private final int mNewMaxResponseCount;
     private final int mMaxLimit;
 
     private Call<List<Notification>> mHttpCall;
@@ -64,9 +63,8 @@ public class FragmentNotfications extends Fragment {
         super();
         mBaseActivity = baseActivity;
         mData = new ArrayList<>();
-        mMaxDisplayCount = 10;
-        mNewMaxResponseCount = 5;
-        mMaxResponseCount = mMaxDisplayCount + mNewMaxResponseCount;
+        mMaxDisplayCount = 200;
+        mMaxResponseCount = 20;
         mMaxLimit = 40;
     }
 
@@ -128,14 +126,14 @@ public class FragmentNotfications extends Fragment {
             @Override
             public void onRefresh(RefreshLayout refreshLayout) {
 
-                Notification notification = mData.size() == 0 ? null : mData.get(mData.size()-1);
+                Notification notification = mData.size() == 0 ? null : mData.get(0);
                 String id = notification == null ? null : notification.id;
 
                 mHttpCall = null;
 
                 mHttpCall = mBaseActivity
                         .getMastApi()
-                        .notifications(null, id, mMaxResponseCount);
+                        .notifications(null, id, mMaxLimit);
 
                 updateHeader();
             }
@@ -145,7 +143,7 @@ public class FragmentNotfications extends Fragment {
             @Override
             public void onLoadMore(RefreshLayout refreshLayout) {
 
-                Notification notification = mData.size() == 0 ? null : mData.get(0);
+                Notification notification = mData.size() == 0 ? null : mData.get(mData.size() - 1);
                 String id = notification == null ? null : notification.id;
 
                 mHttpCall = null;
@@ -187,78 +185,71 @@ public class FragmentNotfications extends Fragment {
                     List<Notification> list = sResponse.body();
                     List<Notification> nlist = new ArrayList<>();
 
-                    int limit = 0;
-                    if (list.size() < mMaxResponseCount) {
-                        limit = list.size();
+                    if (list.size() > mMaxResponseCount) {
+
+                        for (int i = 0; i < mMaxResponseCount; i++) {
+                            nlist.add(0, list.get(list.size() - 1 - i));
+                        }
+
                     } else {
-                        limit = mMaxResponseCount;
+
+                        nlist.addAll(0, list);
+
                     }
-                    for (int i = 0; i < list.size(); i++) {
-                        Pt.d("source item id:" + list.get(i).id);
-                    }
-                    for (int i = 0; i < limit; i++) {
-                        nlist.add(0, list.get(list.size() - 1 - i));
-                    }
+
+//                    Pt.d("start list size:" + list.size());
+//                    Pt.d("start nlist size:" + nlist.size());
+//                    Pt.d("start mData size:" + mData.size());
+//
+//                    for (int i = 0; i < list.size(); i++) {
+//                        Pt.d("start list item:" + list.get(i).id);
+//                    }
+//                    for (int i = 0; i < nlist.size(); i++) {
+//                        Pt.d("start nlist item:" + nlist.get(i).id);
+//                    }
+//                    for (int i = 0; i < mData.size(); i++) {
+//                        Pt.d("start mData item:" + mData.get(i).id);
+//                    }
 
                     int pos = 0;
 
                     if (mData.isEmpty()) {
-                        if (list.size() > mMaxDisplayCount) {
 
-                            for (int i = 0; i < mMaxDisplayCount; i++) {
-                                mData.add(list.get(i));
-                            }
+//                        mData.addAll(nlist);
+                        mData.addAll(list);
 
-                        } else {
-                            mData.addAll(list);
-                        }
-                        for (int i = 0; i < list.size(); i++) {
-                            Pt.d("item id:" + list.get(i).id);
-                        }
-                        for (int i = 0; i < mData.size(); i++) {
-                            Pt.d("mData id:" + mData.get(i).id);
-                        }
                     } else {
 
-                        Notification reff = mData.get(0);
-                        Notification refl = mData.get(mData.size() - 1);
-                        nlist.add(refl);
-                        if (nlist.size() > mMaxResponseCount) {
-                            nlist.remove(nlist.get(0));
-                        }
-                        Pt.d("reff id:" + reff.id);
-                        Pt.d("refl id:" + refl.id);
-                        for (int i = 0; i < nlist.size(); i++) {
-                            Pt.d("item id:" + nlist.get(i).id);
-                        }
+                        Notification ofirst = mData.get(0);
 
-                        mData.clear();
+                        if (mData.size() > mMaxDisplayCount) {
 
-                        if (nlist.size() > mMaxDisplayCount) {
-                            for (int i = 0; i < mMaxDisplayCount; i++) {
-                                Notification notification = nlist.get(i);
-                                mData.add(notification);
-                                if (reff.id.equals(notification.id)) {
-                                    pos = i;
-                                }
-                                Pt.d("mData id:" + notification.id);
+                            mData.clear();
+
+                            if (nlist.size() >= mMaxDisplayCount) {
+                                nlist.remove(0);
                             }
-                        } else {
-                            mData.addAll(nlist);
-                            for (int i = 0; i < nlist.size(); i++) {
-                                Notification notification = nlist.get(i);
-                                if (reff.id.equals(notification.id)) {
-                                    pos = i;
-                                }
-                                Pt.d("mData id:" + notification.id);
+                            nlist.add(ofirst);
+
+                        }
+
+                        mData.addAll(0, nlist);
+
+                        for (int i = 0; i < mData.size(); i++) {
+                            if (ofirst.id.equals(mData.get(i).id)) {
+                                pos = i;
                             }
                         }
                     }
 
-                    mRecycleAdapter.notifyDataSetChanged();
                     mRecycle.scrollToPosition(pos);
-                    Pt.d("add nlist size:" + nlist.size());
-                    Pt.d("pos:" + pos);
+
+//                    for (int i = 0; i < mData.size(); i++) {
+//                        Pt.d("end mData item:" + mData.get(i).id);
+//                    }
+//                    Pt.d("end mData size:" + mData.size());
+
+                    mRecycleAdapter.notifyDataSetChanged();
                     Pt.d("NOTIFICATION onResponse");
                 } else {
                     Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
@@ -311,48 +302,47 @@ public class FragmentNotfications extends Fragment {
                     List<Notification> list = sResponse.body();
 
                     int pos = 0;
+                    boolean clear = false;
 
-                    if (mData.isEmpty()){
-                        if (list.size() > mMaxDisplayCount) {
+                    if (mData.isEmpty()) {
 
-                            for (int i = 0; i < mMaxDisplayCount; i++) {
-                                mData.add(list.get(i));
+                        mData.addAll(list);
+
+                    } else {
+
+                        Notification olast = mData.get(mData.size() - 1);
+
+                        if (mData.size() > mMaxDisplayCount) {
+
+                            mData.clear();
+                            clear = true;
+
+                            if (list.size() >= mMaxDisplayCount) {
+                                list.remove(list.size() - 1);
                             }
+                            list.add(0, olast);
 
-                        } else {
-                            mData.addAll(list);
-                        }
-                    }else {
-
-                        Notification reff = mData.get(0);
-                        Notification refl = mData.get(mData.size() - 1);
-                        list.add(0, reff);
-                        list.remove(list.size() - 1);
-                        Pt.d("reff id:" + reff.id);
-                        Pt.d("refl id:" + refl.id);
-
-                        mData.clear();
-                        for (int i = 0; i < mMaxDisplayCount; i++) {
-                            Notification notification = list.get(list.size() - 1 - i);
-                            mData.add(0, notification);
-                            if (refl.id.equals(notification.id)) {
-                                pos = mMaxDisplayCount - 1 - i;
-                            }
                         }
 
-                        for (int i = 0; i < list.size(); i++) {
-                            Pt.d("item id:" + list.get(i).id);
-                        }
+                        mData.addAll(list);
+
                         for (int i = 0; i < mData.size(); i++) {
-                            Pt.d("mData id:" + mData.get(i).id);
+                            if (olast.id.equals(mData.get(i).id)) {
+                                pos = i;
+                            }
                         }
                     }
 
                     mRecycleAdapter.notifyDataSetChanged();
+
                     mRecycle.scrollToPosition(pos);
-                    Pt.d("add list size:" + list.size());
-                    Pt.d("pos:" + pos);
-                    Pt.d("NOTIFICATION onResponse");
+//                    if (clear) {
+////                        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecycle.getLayoutManager();
+////                        layoutManager.scrollToPositionWithOffset(0,0);
+//                        Pt.d(" clear");
+//                    }
+
+                    Pt.d(" onResponse");
                 } else {
                     Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
                             , Toast.LENGTH_SHORT).show();

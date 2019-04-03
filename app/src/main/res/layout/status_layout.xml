@@ -76,38 +76,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!--<LinearLayout-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:orientation="horizontal">-->
-                    <!--<ImageView-->
-                    <!--android:id="@+id/status_media1"-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_weight="1"-->
-                    <!--android:layout_height="150dp" />-->
-                    <!--<ImageView-->
-                    <!--android:id="@+id/status_media2"-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_height="150dp"-->
-                    <!--android:layout_weight="1"/>-->
-                    <!--</LinearLayout>-->
-
-                    <!--<LinearLayout-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:orientation="horizontal">-->
-                    <!--<ImageView-->
-                    <!--android:id="@+id/status_media3"-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_weight="1"-->
-                    <!--android:layout_height="150dp" />-->
-                    <!--<ImageView-->
-                    <!--android:id="@+id/status_media4"-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_height="150dp"-->
-                    <!--android:layout_weight="1"/>-->
-                    <!--</LinearLayout>-->
-
                 </LinearLayout>
 
             </LinearLayout>

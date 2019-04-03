@@ -91,9 +91,9 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
         Spanned spdContent = HtmlUtils.fromHtml(cStatus.content);
         holder.setContent(spdContent);
 
-        holder.setRRFCount(cStatus.repliesCount,
-                cStatus.reblogsCount,
-                cStatus.favouritesCount);
+        holder.setControllerGroup(false, cStatus.repliesCount,
+                cStatus.reblogged, cStatus.reblogsCount,
+                cStatus.favourited, cStatus.favouritesCount);
 
         holder.getReplie().setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +114,6 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
             }
         });
 
-        holder.setReblogSelecte(cStatus.reblogged);
         holder.getReblog().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -164,15 +163,33 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                cStatus.reblogged = respStatus.reblogged;
-                                int count = Integer.parseInt(respStatus.reblogsCount);
-                                if (respStatus.reblogged) {
-                                    cStatus.reblogsCount = count + 1 + "";
-                                } else {
+                                if (respStatus.getActionableStatus()!=respStatus){
+                                    respStatus = respStatus.getActionableStatus();
+                                }
+//                                int count = Integer.parseInt(respStatus.reblogsCount);
+//                                if (respStatus.reblogged) {
+//                                    respStatus.reblogsCount = count + "";
+//                                } else {
+//                                    count -= 1;
+//                                    if (count < 0) count = 0;
+//                                    respStatus.reblogsCount = count + "";
+//                                }
+                                if (!respStatus.reblogged) {
+//                                    respStatus.reblogsCount = respStatus.reblogsCount;
+//                                } else {
+                                    int count = Integer.parseInt(respStatus.reblogsCount);
                                     count -= 1;
                                     if (count < 0) count = 0;
-                                    cStatus.reblogsCount = count + "";
+                                    respStatus.reblogsCount = count + "";
                                 }
+//                                Pt.d(cStatus.id);
+//                                Pt.d(respStatus.id);
+//                                Pt.d(respStatus.reblogsCount);
+                                cStatus.repliesCount = respStatus.repliesCount;
+                                cStatus.reblogged = respStatus.reblogged;
+                                cStatus.reblogsCount = respStatus.reblogsCount;
+                                cStatus.favourited = respStatus.favourited;
+                                cStatus.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getReblog().setEnabled(true);
                                 Pt.d("onReceive");
@@ -199,7 +216,6 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
             }
         });
 
-        holder.setFavouriteSelete(cStatus.favourited);
         holder.getFavourite().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -249,7 +265,6 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                cStatus.favourited = respStatus.favourited;
                                 if (respStatus.favourited) {
                                     cStatus.favouritesCount = respStatus.favouritesCount;
                                 } else {
@@ -258,6 +273,11 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
                                     if (count < 0) count = 0;
                                     cStatus.favouritesCount = count + "";
                                 }
+                                cStatus.repliesCount = respStatus.repliesCount;
+                                cStatus.reblogged = respStatus.reblogged;
+                                cStatus.reblogsCount = respStatus.reblogsCount;
+                                cStatus.favourited = respStatus.favourited;
+//                                cStatus.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getFavourite().setEnabled(true);
                                 Pt.d("onReceive");
@@ -340,40 +360,65 @@ public class RecycleStatusAdapter extends RecyclerView.Adapter<StatusHolder> {
 //                Pt.d("url:" + actionableStatus.attachments[i].url);
 //            }
 
-        for (int i = 0; i < cStatus.attachments.length; i++) {
-            final Status.MediaAttachment media = cStatus.attachments[i];
-            if (media.type == Status.MediaAttachment.Type.IMAGE) {
-                final ImageView imageView = new ImageView(mView.getContext());
-                final Drawable drawable = new IconicsDrawable(mView.getContext())
-                        .icon(FontAwesome.Icon.faw_file_image_o)
-                        .color(Color.LTGRAY)
-                        .sizeDp(48);
-                imageView.setImageDrawable(drawable);
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-                imageView.setLayoutParams(params);
-                Picasso.get()
-                        .load(media.previewUrl)
-                        .into(imageView);
-                holder.addMedias(imageView);
+        if (cStatus.attachments.length>0){
 
-                imageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        FragmentManager manager = mFragment.getBaseActivity().getSupportFragmentManager();
-                        DialogModalImage dialog = new DialogModalImage();
-                        dialog
-                                .setUrl(media.url)
-                                .setModal(true)
-                                .setMax(true)
-                                .setDimAmount(.7f)
-                                .setCleanBackground(true)
-                                .setLayout(R.layout.dialog_image);
-                        dialog.show(manager, null);
-                    }
-                });
+//            LinearLayout layout = new LinearLayout(mView.getContext());
+//            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT
+//            );
+//            layout.setOrientation(LinearLayout.HORIZONTAL);
+
+            for (int i = 0; i < cStatus.attachments.length; i++) {
+                final Status.MediaAttachment media = cStatus.attachments[i];
+                if (media.type == Status.MediaAttachment.Type.IMAGE) {
+                    final RoundedImageView round = new RoundedImageView(mView.getContext());
+                    final Drawable drawable = new IconicsDrawable(mView.getContext())
+                            .icon(FontAwesome.Icon.faw_file_image_o)
+                            .color(Color.LTGRAY)
+                            .sizeDp(48);
+                    round.setCornerRadius(8);
+                    round.setBorderColor(Color.GRAY);
+                    round.setBorderWidth(1f);
+                    round.setImageDrawable(drawable);
+
+                    int width = mView.getWidth()/5;
+                    ConstraintLayout.LayoutParams imageParams = new ConstraintLayout.LayoutParams(
+                            400,
+                            400
+                    );
+                    imageParams.topMargin = 10;
+                    imageParams.bottomMargin = 10;
+                    imageParams.leftMargin = 10;
+                    imageParams.rightMargin = 10;
+                    round.setLayoutParams(imageParams);
+                    round.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//                roundedImageView.setMinimumWidth(100);
+//                roundedImageView.setMaxWidth(100);
+//                roundedImageView.setMinimumHeight(100);
+//                roundedImageView.setMaxHeight(100);
+                    Picasso.get()
+                            .load(media.previewUrl)
+                            .into(round);
+
+                    holder.addMedias(round);
+                    round.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            FragmentManager manager = mFragment.getBaseActivity().getSupportFragmentManager();
+                            DialogModalImage dialog = new DialogModalImage();
+                            dialog
+                                    .setUrl(media.url)
+                                    .setModal(true)
+//                                    .setBlockBack(false)
+                                    .setMax(true)
+                                    .setDimAmount(.7f)
+                                    .setCleanBackground(true)
+                                    .setLayout(R.layout.dialog_image);
+                            dialog.show(manager, null);
+                        }
+                    });
+                }
             }
         }
 

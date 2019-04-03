@@ -24,7 +24,6 @@ import com.jyb.tooter.dialog.DialogModal;
 import com.jyb.tooter.entity.Account;
 import com.jyb.tooter.fragments.FragmentNotfications;
 import com.jyb.tooter.fragments.FragmentStatus;
-import com.jyb.tooter.fragments.FragmentPager;
 import com.jyb.tooter.job.Job;
 import com.jyb.tooter.job.maneger.JobManager;
 import com.jyb.tooter.model.Toot;

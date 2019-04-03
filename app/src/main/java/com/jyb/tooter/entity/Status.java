@@ -19,10 +19,11 @@ import android.text.Spanned;
 import android.text.SpannedString;
 
 import com.google.gson.annotations.SerializedName;
+import com.jyb.tooter.interfaces.Message;
 
 import java.util.Date;
 
-public class Status {
+public class Status implements Message {
 
     public static final int MAX_MEDIA_ATTACHMENTS = 4;
 

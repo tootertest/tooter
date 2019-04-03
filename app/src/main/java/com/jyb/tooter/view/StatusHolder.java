@@ -114,7 +114,19 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         return mLayoutFavourites;
     }
 
-    public void setFavouriteSelete(boolean flag) {
+    private void setReplieSelecte(boolean flag) {
+        if (flag) {
+            Drawable drawable = new IconicsDrawable(mView.getContext())
+                    .icon(FontAwesome.Icon.faw_reply_all)
+                    .color(mFragment.getResources().getColor(R.color.status_reblog_button_marked_dark))
+                    .sizeDp(mDrawableSize);
+            mImageFavourites.setBackground(drawable);
+        } else {
+            mImageFavourites.setBackground(mDrawableFavourites);
+        }
+    }
+
+    private void setFavouriteSelecte(boolean flag) {
         if (flag) {
             Drawable drawable = new IconicsDrawable(mView.getContext())
                     .icon(FontAwesome.Icon.faw_star)
@@ -126,7 +138,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setReblogSelecte(boolean flag) {
+    private void setReblogSelecte(boolean flag) {
         if (flag) {
             Drawable drawable = new IconicsDrawable(mView.getContext())
                     .icon(FontAwesome.Icon.faw_retweet)
@@ -138,6 +150,16 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         }
     }
 
+    public void setControllerGroup(boolean selecte1, String count1,
+                                   boolean selecte2, String count2,
+                                   boolean selecte3, String count3) {
+
+        setReplieSelecte(selecte1);
+        setReblogSelecte(selecte2);
+        setFavouriteSelecte(selecte3);
+        setRRFCount(count1, count2, count3);
+    }
+
     public void setUsername(Spanned spanned) {
         mUsername.setText(spanned);
     }
@@ -146,7 +168,7 @@ public class StatusHolder extends RecyclerView.ViewHolder {
         mContent.setText(spanned);
     }
 
-    public void setRRFCount(String count1, String count2, String count3) {
+    private void setRRFCount(String count1, String count2, String count3) {
         mRepliesCount.setText(count1);
         mReblogsCount.setText(count2);
         mFavouritesCount.setText(count3);

@@ -49,7 +49,6 @@ public class FragmentStatus extends Fragment {
 
     public final int mMaxDisplayCount;
     public final int mMaxResponseCount;
-    public final int mNewMaxResponseCount;
     private final int mMaxLimit;
 
     private BaseActivity mBaseActivity;
@@ -64,10 +63,9 @@ public class FragmentStatus extends Fragment {
         super();
         mBaseActivity = activity;
         mData = new ArrayList<>();
-//        mMaxCacheCount = 200;
-        mMaxDisplayCount = 10;
-        mNewMaxResponseCount = 5;
-        mMaxResponseCount = mMaxDisplayCount + mNewMaxResponseCount;
+//        mStartDisplayCount = 200;
+        mMaxDisplayCount = 200;
+        mMaxResponseCount = 20;
         mMaxLimit = 40;
         mCallType = type;
         mHttpCall = null;
@@ -135,7 +133,7 @@ public class FragmentStatus extends Fragment {
         mRefresh.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(@NonNull RefreshLayout refreshLayout) {
-                Status status = mData.size() == 0 ? null : mData.get(mData.size() - 1);
+                Status status = mData.size() == 0 ? null : mData.get(0);
                 String id = status == null ? null : status.id;
 
                 Pt.d("first api id:" + id);
@@ -166,7 +164,7 @@ public class FragmentStatus extends Fragment {
             @Override
             public void onLoadMore(RefreshLayout refreshLayout) {
 
-                Status status = mData.size() == 0 ? null : mData.get(0);
+                Status status = mData.size() == 0 ? null : mData.get(mData.size() - 1);
                 String id = status == null ? null : status.id;
 
                 mHttpCall = null;
@@ -219,81 +217,75 @@ public class FragmentStatus extends Fragment {
             public void onReceive() {
                 super.onReceive();
                 if (sResponse != null && sResponse.isSuccessful()) {
+
                     List<Status> list = sResponse.body();
                     List<Status> nlist = new ArrayList<>();
 
-                    int limit = 0;
-                    if (list.size() < mMaxResponseCount) {
-                        limit = list.size();
+                    if (list.size() > mMaxResponseCount) {
+
+                        for (int i = 0; i < mMaxResponseCount; i++) {
+                            nlist.add(0, list.get(list.size() - 1 - i));
+                        }
+
                     } else {
-                        limit = mMaxResponseCount;
+
+                        nlist.addAll(0, list);
+
                     }
-                    for (int i = 0; i < list.size(); i++) {
-                        Pt.d("source item id:" + list.get(i).id);
-                    }
-                    for (int i = 0; i < limit; i++) {
-                        nlist.add(0, list.get(list.size() - 1 - i));
-                    }
+
+//                    Pt.d("start list size:" + list.size());
+//                    Pt.d("start nlist size:" + nlist.size());
+//                    Pt.d("start mData size:" + mData.size());
+
+//                    for (int i = 0; i < list.size(); i++) {
+//                        Pt.d("start list item:" + list.get(i).id);
+//                    }
+//                    for (int i = 0; i < nlist.size(); i++) {
+//                        Pt.d("start nlist item:" + nlist.get(i).id);
+//                    }
+//                    for (int i = 0; i < mData.size(); i++) {
+//                        Pt.d("start mData item:" + mData.get(i).id);
+//                    }
 
                     int pos = 0;
 
                     if (mData.isEmpty()) {
-                        if (list.size() > mMaxDisplayCount) {
 
-                            for (int i = 0; i < mMaxDisplayCount; i++) {
-                                mData.add(list.get(i));
-                            }
+//                        mData.addAll(nlist);
+                        mData.addAll(list);
 
-                        } else {
-                            mData.addAll(list);
-                        }
-                        for (int i = 0; i < list.size(); i++) {
-                            Pt.d("item id:" + list.get(i).id);
-                        }
-                        for (int i = 0; i < mData.size(); i++) {
-                            Pt.d("mData id:" + mData.get(i).id);
-                        }
                     } else {
 
-                        Status reff = mData.get(0);
-                        Status refl = mData.get(mData.size() - 1);
-                        nlist.add(refl);
-                        if (nlist.size() > mMaxResponseCount) {
-                            nlist.remove(nlist.get(0));
-                        }
-                        Pt.d("reff id:" + reff.id);
-                        Pt.d("refl id:" + refl.id);
-                        for (int i = 0; i < nlist.size(); i++) {
-                            Pt.d("item id:" + nlist.get(i).id);
-                        }
+                        Status ofirst = mData.get(0);
 
-                        mData.clear();
+                        if (mData.size() > mMaxDisplayCount) {
 
-                        if (nlist.size() > mMaxDisplayCount) {
-                            for (int i = 0; i < mMaxDisplayCount; i++) {
-                                Status status = nlist.get(i);
-                                mData.add(status);
-                                if (reff.id.equals(status.id)) {
-                                    pos = i;
-                                }
-                                Pt.d("mData id:" + status.id);
+                            mData.clear();
+
+                            if (nlist.size() >= mMaxDisplayCount) {
+                                nlist.remove(0);
                             }
-                        } else {
-                            mData.addAll(nlist);
-                            for (int i = 0; i < nlist.size(); i++) {
-                                Status status = nlist.get(i);
-                                if (reff.id.equals(status.id)) {
-                                    pos = i;
-                                }
-                                Pt.d("mData id:" + status.id);
+                            nlist.add(ofirst);
+
+                        }
+
+                        mData.addAll(0, nlist);
+
+                        for (int i = 0; i < mData.size(); i++) {
+                            if (ofirst.id.equals(mData.get(i).id)) {
+                                pos = i;
                             }
                         }
                     }
 
-                    mRecycleAdapter.notifyDataSetChanged();
                     mRecycle.scrollToPosition(pos);
-                    Pt.d("add nlist size:" + nlist.size());
-                    Pt.d("pos:" + pos);
+
+//                    for (int i = 0; i < mData.size(); i++) {
+//                        Pt.d("end mData item:" + mData.get(i).id);
+//                    }
+//                    Pt.d("end mData size:" + mData.size());
+
+                    mRecycleAdapter.notifyDataSetChanged();
                     Pt.d(mCallType + " onResponse");
                 } else {
                     Toast.makeText(mBaseActivity, mBaseActivity.getString(R.string.network_request_timeout)
@@ -345,49 +337,57 @@ public class FragmentStatus extends Fragment {
                 if (sResponse != null && sResponse.isSuccessful()) {
                     List<Status> list = sResponse.body();
 
+//                    Pt.d("start list size:" + list.size());
+//                    Pt.d("start mData size:" + mData.size());
+//
+//                    for (int i = 0; i < list.size(); i++) {
+//                        Pt.d("start list item:" + list.get(i).id);
+//                    }
+//                    for (int i = 0; i < mData.size(); i++) {
+//                        Pt.d("start mData item:" + mData.get(i).id);
+//                    }
+
                     int pos = 0;
+                    boolean clear = false;
 
                     if (mData.isEmpty()) {
-                        if (list.size() > mMaxDisplayCount) {
 
-                            for (int i = 0; i < mMaxDisplayCount; i++) {
-                                mData.add(list.get(i));
-                            }
+                        mData.addAll(list);
 
-                        } else {
-                            mData.addAll(list);
-                        }
                     } else {
 
-                        Status reff = mData.get(0);
-                        Status refl = mData.get(mData.size() - 1);
-                        list.add(0, reff);
-                        list.remove(list.size() - 1);
-                        Pt.d("reff id:" + reff.id);
-                        Pt.d("refl id:" + refl.id);
+                        Status olast = mData.get(mData.size() - 1);
 
+                        if (mData.size() > mMaxDisplayCount) {
 
-                        mData.clear();
-                        for (int i = 0; i < mMaxDisplayCount; i++) {
-                            Status status = list.get(list.size() - 1 - i);
-                            mData.add(0, status);
-                            if (refl.id.equals(status.id)) {
-                                pos = mMaxDisplayCount - 1 - i;
+                            mData.clear();
+                            clear = true;
+
+                            if (list.size() >= mMaxDisplayCount) {
+                                list.remove(list.size() - 1);
                             }
+                            list.add(0, olast);
+
                         }
 
-                        for (int i = 0; i < list.size(); i++) {
-                            Pt.d("item id:" + list.get(i).id);
-                        }
+                        mData.addAll(list);
+
                         for (int i = 0; i < mData.size(); i++) {
-                            Pt.d("mData id:" + mData.get(i).id);
+                            if (olast.id.equals(mData.get(i).id)) {
+                                pos = i;
+                            }
                         }
                     }
 
                     mRecycleAdapter.notifyDataSetChanged();
+
                     mRecycle.scrollToPosition(pos);
-                    Pt.d("add list size:" + list.size());
-                    Pt.d("pos:" + pos);
+//                    if (clear) {
+//                        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecycle.getLayoutManager();
+//                        layoutManager.scrollToPositionWithOffset(0,0);
+//                        Pt.d(mCallType + " clear");
+//                    }
+
                     Pt.d(mCallType + " onResponse");
                 } else {
                     Toast.makeText(mBaseActivity, getString(R.string.network_request_timeout)

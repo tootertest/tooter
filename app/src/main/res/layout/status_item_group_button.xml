@@ -27,7 +27,7 @@
             android:id="@+id/status_item_group_button_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="9999"/>
+            android:text=""/>
 
     </LinearLayout>
 </LinearLayout>

@@ -132,7 +132,9 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
 
 //        holder.setControllerGroupVisible(true, false, false, true);
 
+//        final Status status = notification.status;
         final Status actionableStatus = notification.status.getActionableStatus();
+
         String username = notification.account.acct;
         String displayName = notification.account.displayName;
         String name = displayName.equals("") ? username : displayName;
@@ -143,10 +145,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
         holder.setUsername(spdName);
 
         holder.setDate(notification.createdAt);
-
-        holder.setRRFCount(actionableStatus.reblogsCount,
-                actionableStatus.reblogsCount,
-                actionableStatus.favouritesCount);
 
         Spanned spdContent = HtmlUtils.fromHtml(actionableStatus.content);
         holder.setContent(spdContent);
@@ -179,6 +177,10 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                 .sizeDp(22);
         holder.setStatusType(retweet);
 
+        holder.setControllerGroup(false, actionableStatus.repliesCount,
+                actionableStatus.reblogged, actionableStatus.reblogsCount,
+                actionableStatus.favourited, actionableStatus.favouritesCount);
+
         holder.getReplie()
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -194,7 +196,10 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                     }
                 });
 
-        holder.setReblogSelecte(actionableStatus.reblogged);
+        holder.setControllerGroup(false, actionableStatus.repliesCount,
+                actionableStatus.reblogged, actionableStatus.reblogsCount,
+                actionableStatus.favourited, actionableStatus.favouritesCount);
+
         holder.getReblog().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -244,15 +249,22 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                actionableStatus.reblogged = respStatus.reblogged;
-                                int count = Integer.parseInt(respStatus.reblogsCount);
-                                if (respStatus.reblogged) {
-                                    actionableStatus.reblogsCount = count + 1 + "";
-                                } else {
+                                if (respStatus.getActionableStatus()!=respStatus){
+                                    respStatus = respStatus.getActionableStatus();
+                                }
+                                if (!respStatus.reblogged) {
+//                                    respStatus.reblogsCount = respStatus.reblogsCount;
+//                                } else {
+                                    int count = Integer.parseInt(respStatus.reblogsCount);
                                     count -= 1;
                                     if (count < 0) count = 0;
-                                    actionableStatus.reblogsCount = count + "";
+                                    respStatus.reblogsCount = count + "";
                                 }
+                                actionableStatus.repliesCount = respStatus.repliesCount;
+                                actionableStatus.reblogged = respStatus.reblogged;
+                                actionableStatus.reblogsCount = respStatus.reblogsCount;
+                                actionableStatus.favourited = respStatus.favourited;
+                                actionableStatus.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getReblog().setEnabled(true);
                                 Pt.d("onReceive");
@@ -279,7 +291,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
             }
         });
 
-        holder.setFavouriteSelete(actionableStatus.favourited);
         holder.getFavourite().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -329,7 +340,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                actionableStatus.favourited = respStatus.favourited;
                                 if (respStatus.favourited) {
                                     actionableStatus.favouritesCount = respStatus.favouritesCount;
                                 } else {
@@ -338,6 +348,11 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                                     if (count < 0) count = 0;
                                     actionableStatus.favouritesCount = count + "";
                                 }
+                                actionableStatus.repliesCount = respStatus.repliesCount;
+                                actionableStatus.reblogged = respStatus.reblogged;
+                                actionableStatus.reblogsCount = respStatus.reblogsCount;
+                                actionableStatus.favourited = respStatus.favourited;
+//                                actionableStatus.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getFavourite().setEnabled(true);
                                 Pt.d("onReceive");
@@ -381,10 +396,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
 
         holder.setDate(notification.createdAt);
 
-        holder.setRRFCount(status.repliesCount,
-                status.reblogsCount,
-                status.favouritesCount);
-
         Spanned spdContent = HtmlUtils.fromHtml(status.content);
         holder.setContent(spdContent);
 
@@ -410,6 +421,10 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                 .into(roundImage2);
         holder.addAvatar(view);
 
+        holder.setControllerGroup(false, status.repliesCount,
+                status.reblogged, status.reblogsCount,
+                status.favourited, status.favouritesCount);
+
         Drawable retweet = new IconicsDrawable(mView.getContext())
                 .icon(FontAwesome.Icon.faw_star)
                 .color(mFragment.getResources().getColor(R.color.status_favourite_button_marked_dark))
@@ -431,7 +446,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                     }
                 });
 
-        holder.setReblogSelecte(status.reblogged);
         holder.getReblog().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -481,15 +495,25 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                status.reblogged = respStatus.reblogged;
-                                int count = Integer.parseInt(respStatus.reblogsCount);
-                                if (respStatus.reblogged) {
-                                    status.reblogsCount = count + 1 + "";
-                                } else {
+                                if (respStatus.getActionableStatus()!=respStatus){
+                                    respStatus = respStatus.getActionableStatus();
+                                }
+                                if (!respStatus.reblogged) {
+//                                    respStatus.reblogsCount = respStatus.reblogsCount;
+//                                } else {
+                                    int count = Integer.parseInt(respStatus.reblogsCount);
                                     count -= 1;
                                     if (count < 0) count = 0;
-                                    status.reblogsCount = count + "";
+                                    respStatus.reblogsCount = count + "";
                                 }
+                                Pt.d(status.id);
+                                Pt.d(respStatus.id);
+                                Pt.d(respStatus.reblogsCount);
+                                status.repliesCount = respStatus.repliesCount;
+                                status.reblogged = respStatus.reblogged;
+                                status.reblogsCount = respStatus.reblogsCount;
+                                status.favourited = respStatus.favourited;
+                                status.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getReblog().setEnabled(true);
                                 Pt.d("onReceive");
@@ -516,7 +540,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
             }
         });
 
-        holder.setFavouriteSelete(status.favourited);
         holder.getFavourite().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -566,7 +589,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                status.favourited = respStatus.favourited;
                                 if (respStatus.favourited) {
                                     status.favouritesCount = respStatus.favouritesCount;
                                 } else {
@@ -575,6 +597,11 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                                     if (count < 0) count = 0;
                                     status.favouritesCount = count + "";
                                 }
+                                status.repliesCount = respStatus.repliesCount;
+                                status.reblogged = respStatus.reblogged;
+                                status.reblogsCount = respStatus.reblogsCount;
+                                status.favourited = respStatus.favourited;
+//                                status.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getFavourite().setEnabled(true);
                                 Pt.d("onReceive");
@@ -618,12 +645,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
 
         final Date date = status.createdAt;
         holder.setDate(date);
-
-        holder.setRRFCount(status.repliesCount, status.reblogsCount, status.favouritesCount);
-
-        holder.setFavouriteSelete(status.favourited);
-
-        holder.setReblogSelecte(status.reblogged);
 
         float radius = 16;
         float borderWidth = 1;
@@ -670,6 +691,10 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
             holder.setStatusType(drawable);
         }
 
+        holder.setControllerGroup(false, status.repliesCount,
+                status.reblogged, status.reblogsCount,
+                status.favourited, status.favouritesCount);
+
         holder.getReplie()
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -685,7 +710,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                     }
                 });
 
-        holder.setReblogSelecte(status.reblogged);
         holder.getReblog().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -735,7 +759,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                status.reblogged = respStatus.reblogged;
                                 int count = Integer.parseInt(respStatus.reblogsCount);
                                 if (respStatus.reblogged) {
                                     status.reblogsCount = count + 1 + "";
@@ -744,6 +767,11 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                                     if (count < 0) count = 0;
                                     status.reblogsCount = count + "";
                                 }
+                                status.repliesCount = respStatus.repliesCount;
+                                status.reblogged = respStatus.reblogged;
+//                                status.reblogsCount = respStatus.reblogsCount;
+                                status.favourited = respStatus.favourited;
+                                status.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getReblog().setEnabled(true);
                                 Pt.d("onReceive");
@@ -770,7 +798,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
             }
         });
 
-        holder.setFavouriteSelete(status.favourited);
         holder.getFavourite().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -820,7 +847,6 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                         if (response != null && response.isSuccessful()) {
                             Status respStatus = response.body();
                             if (respStatus != null) {
-                                status.favourited = respStatus.favourited;
                                 if (respStatus.favourited) {
                                     status.favouritesCount = respStatus.favouritesCount;
                                 } else {
@@ -829,6 +855,11 @@ public class RecycleNotficationAdapter extends RecyclerView.Adapter<StatusHolder
                                     if (count < 0) count = 0;
                                     status.favouritesCount = count + "";
                                 }
+                                status.repliesCount = respStatus.repliesCount;
+                                status.reblogged = respStatus.reblogged;
+                                status.reblogsCount = respStatus.reblogsCount;
+                                status.favourited = respStatus.favourited;
+//                                status.favouritesCount = respStatus.favouritesCount;
                                 notifyItemChanged(position);
                                 holder.getFavourite().setEnabled(true);
                                 Pt.d("onReceive");
